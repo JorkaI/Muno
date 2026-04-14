@@ -1096,7 +1096,7 @@ function initKeyboard(){
 
 const SUPA_URL='https://utcgbxawccfyygpcczmv.supabase.co';
 const SUPA_KEY='sb_publishable_KpZLMXyXBtlMoFpVIi-eJw_eXP-feFG';
-const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{flowType:'pkce',detectSessionInUrl:true}});
 
 let currentUser=null;
 let authMode='signup';
@@ -1262,6 +1262,7 @@ async function submitAuth(){
     setAuthErr('Check your email to confirm your account.');return;
   }
   updUserIcon();closeMo('mAuth');
+  window.history.replaceState(null,'',window.location.pathname);
   try{await syncToCloud();}catch(e){console.error('Post-login sync error:',e)}
   const _email=currentUser?.email||'';
   showToast(authMode==='signup'?'Registered as '+_email:'Logged in as '+_email);
