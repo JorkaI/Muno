@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-visual">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Muno">
+<meta name="theme-color" content="#f4f4f4">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Muno</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+:root{
+--bg:#f4f4f4;--white:#fff;
+--text:#000;--text2:#676767;--text3:#999;
+--green:#36A444;--green-bg:rgba(54,164,68,.15);
+--red:#EB5757;--red-bg:rgba(235,87,87,.1);
+--fab:#43299B;
+--cta:#252228;
+--card-shadow:0 8px 40px rgba(0,0,0,.05);
+--rad:26px;--radsm:16px;--radxs:10px;
+--st:env(safe-area-inset-top,20px);--sb:env(safe-area-inset-bottom,0px)
+}
+html,body{font-family:'Google Sans','Google Sans Text',-apple-system,sans-serif;background:#f4f4f4;color:var(--text);height:100%;overflow:hidden}
+input,select,textarea{-webkit-user-select:text;user-select:text;font-family:inherit}
+/* Fix iOS blue tint on buttons/links */
+button,a{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;text-decoration:none;font-family:inherit}
+svg{color:inherit}
+
+.app{width:100%;max-width:480px;height:100%;position:relative;overflow:hidden;margin:0 auto;background:#f4f4f4}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;padding-top:var(--st);opacity:0;transition:opacity .25s ease}
+.scr.on{display:flex;opacity:1}
+.scr-body{flex:1;overflow-y:auto;padding:0 24px 12px;-webkit-overflow-scrolling:touch}
+.scr-body::-webkit-scrollbar{display:none}
+.app.modal-open .scr-body{overflow:hidden}
+
+/* Icon base */
+.i{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:inherit}
+.i svg{width:100%;height:100%;display:block;fill:currentColor}
+
+/* Header */
+.hdr{display:flex;align-items:center;padding:24px;min-height:48px;flex-shrink:0;gap:16px}
+.logo{display:flex;align-items:center;flex:1}
+
+/* Shared button 36x36 */
+.btn36{width:36px;height:36px;border-radius:18px;background:var(--white);border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--card-shadow);flex-shrink:0;color:var(--text);transition:transform .15s}
+.btn36:active{transform:scale(.9)}
+.btn36 .i{width:16px;height:16px;color:var(--text)}
+.btn-user{display:flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 10px;border-radius:18px;background:var(--white);border:.5px solid rgba(0,0,0,.08);box-shadow:var(--card-shadow);cursor:pointer;flex-shrink:0;transition:transform .15s;max-width:180px}
+.btn-user:active{transform:scale(.9)}
+.btn-user-ic{width:16px;height:16px;flex-shrink:0}
+.btn-user span{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.hdr-t{flex:1;min-width:0}
+.hdr-t-name{font-size:22px;font-weight:600}
+.hdr-t-sub{font-size:12px;color:var(--text2);font-weight:500;margin-top:2px}
+.hdr-dots{width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;flex-shrink:0;color:var(--text)}
+.hdr-dots .i{width:24px;height:24px;color:var(--text)}
+
+/* Stats */
+.stats{display:flex;gap:20px;padding:16px 0 0;align-items:center}
+.stat{display:flex;align-items:center;gap:12px;flex:1}
+.stat-icon{width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:visible}
+.stat-icon .i{width:20px;height:20px}
+.stat-ring{position:absolute;top:-1px;left:-1px;width:54px;height:54px;transform:rotate(-90deg);overflow:visible}
+.stat-ring circle{fill:none;stroke-width:2;stroke-linecap:round}
+.stat-info{display:flex;flex-direction:column;gap:4px}
+.stat-l{font-size:12px;font-weight:500;color:var(--text2)}
+.stat-v{font-size:14px;font-weight:600}
+
+/* CTA */
+.cta{margin:32px 0;background:var(--cta);border-radius:var(--rad);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(37,34,40,.12);transition:transform .15s}
+.cta:active{transform:scale(.985)}
+.cta-info{display:flex;flex-direction:column;gap:4px;position:relative;z-index:1}
+.cta-t{font-size:22px;font-weight:600;color:#fff}
+.cta-sub{font-size:12px;font-weight:500;color:#fff}
+.cta-play{width:52px;height:52px;border-radius:296px;background:var(--white);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;color:var(--cta)}
+.cta-play .i{width:20px;height:20px;color:var(--cta)}
+
+/* Section */
+.sec{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.sec-t{font-size:22px;font-weight:600}
+.sec-add{width:36px;height:36px;border-radius:18px;border:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;color:var(--text);transition:transform .15s}
+.sec-add:active{transform:scale(.9)}
+.sec-add .i{width:16px;height:16px;color:inherit}
+.fc-grip .i{width:16px;height:16px}
+
+/* Empty state */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center}
+.empty-t{font-size:16px;font-weight:600;margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--text2);font-weight:500;margin-bottom:24px}
+.empty-btn{padding:14px 28px;border-radius:var(--rad);border:none;background:var(--cta);color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .15s}
+.empty-btn:active{transform:scale(.97)}
+
+/* Folder cards */
+.fc{background:var(--white);border-radius:var(--rad);padding:16px;margin-bottom:4px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--card-shadow);transition:transform .15s,opacity .3s}
+.fc:active{transform:scale(.98)}
+.fc.inb{margin-bottom:12px}
+.fc-i{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.fc-n{font-size:14px;font-weight:600;display:flex;align-items:center;color:var(--text)}
+.fc-p{font-size:12px;color:var(--text2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-a{display:flex;gap:6px;flex-shrink:0}
+
+/* Small buttons (folder actions) */
+.sb{width:36px;height:36px;border-radius:18px;border:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;color:var(--text);transition:transform .15s}
+.sb:active{transform:scale(.9)}
+.sb .i{width:16px;height:16px;color:var(--text)}
+.sb.play{background:#252228;border-color:transparent;color:#fff}
+.sb.play .i{width:16px;height:16px;color:#fff}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(32px + var(--sb));right:max(24px,calc((100vw - 480px)/2 + 24px));width:52px;height:52px;border-radius:296px;background:var(--fab);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20;box-shadow:0 8px 24px rgba(67,41,155,.3);transition:transform .2s}
+.fab:active{transform:scale(.92)}
+.fab .i{width:20px;height:20px;color:#fff}
+
+/* Folder open */
+.fo-actions{display:flex;align-items:center;justify-content:space-between;padding:16px 0 0}
+.fo-play{display:flex;align-items:center;gap:12px;cursor:pointer;background:none;border:none;font-family:inherit;color:var(--text)}
+.fo-play:active{opacity:.6}
+.fo-play-circle{width:52px;height:52px;border-radius:296px;background:var(--cta);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.fo-play-circle .i{width:20px;height:20px;color:#fff}
+.fo-play-label{font-size:14px;font-weight:600;color:var(--text)}
+.fo-edit{display:flex;align-items:center;gap:10px;background:none;border:none;padding:8px 12px;border-radius:500px;font-size:14px;font-weight:600;color:var(--text2);font-family:inherit;cursor:pointer}
+.fo-edit:active{opacity:.6}
+.fo-edit .i{width:18px;height:18px;color:var(--text2)}
+
+/* Word sections */
+.wdiv{font-size:12px;color:var(--text2);font-weight:500;padding-bottom:8px}
+.wsec+.wsec{margin-top:16px}
+#wList{padding-top:24px}
+
+/* Word rows - pill shaped */
+.wr{background:var(--white);border-radius:500px;padding:10px 16px 10px 10px;margin-bottom:4px;cursor:pointer;display:flex;align-items:center;gap:2px;box-shadow:var(--card-shadow);transition:transform .15s;min-height:52px}
+.wr:active{transform:scale(.98)}
+.wr-c{flex:1;min-width:0;padding-left:8px;display:flex;flex-direction:column;gap:2px}
+.wr-t{font-size:14px;font-weight:600;color:var(--text)}
+.wr-d{font-size:12px;color:var(--text2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:14px;line-height:14px}
+.wr .wdel{display:none}
+.wr .wchk{display:none}
+.ew .wdel{display:flex}
+.ew .wchk{display:flex}
+
+/* Word checkmark */
+.wchk{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;border:0.5px solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(0,0,0,.06);cursor:pointer;transition:all .2s}
+.wchk .i{width:14px;height:14px;color:var(--text3);opacity:.4}
+.wchk.known{background:var(--green);border-color:var(--green)}
+.wchk.known .i{opacity:1;color:#fff}
+.wchk:active{transform:scale(.85)}
+
+/* Delete button in edit mode */
+.wdel-btn{width:28px;height:28px;border:none;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--red)}
+.wdel-btn .i{width:18px;height:18px;color:var(--red)}
+
+/* Practice */
+.ph{display:flex;align-items:center;justify-content:space-between;padding:24px 24px 11px;flex-shrink:0}
+.pcl{width:36px;height:36px;border-radius:18px;background:var(--white);border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--card-shadow);flex-shrink:0;color:var(--text);transition:transform .15s}
+.pcl:active{transform:scale(.9)}
+.pcl .i{width:16px;height:16px;color:var(--text)}
+.ph-filters{display:flex;gap:4px;align-items:center}
+.pill{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);border-radius:500px;padding:11px 12px;font-size:12px;font-weight:600;color:var(--text);font-family:inherit;cursor:pointer;position:relative;height:36px;transition:transform .15s}
+.pill:active{transform:scale(.95)}
+.pill .i.ch{width:14px;height:14px;transition:transform .2s;color:var(--text)}
+.pill.open .i.ch{transform:rotate(180deg)}
+.pill-sel{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:1}
+
+
+.pbody{flex:1;display:flex;flex-direction:column;padding:0 24px;position:relative}
+.ca{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:20px}
+.cc{font-size:12px;color:var(--text2);margin-bottom:16px;font-weight:500}
+.card{width:272px;min-height:300px;background:var(--white);border-radius:var(--rad);border:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;cursor:pointer;position:relative;box-shadow:var(--card-shadow);transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s;touch-action:none;user-select:none}
+.card-w{font-size:22px;font-weight:600;text-align:center;letter-spacing:-.3px;line-height:1.3;color:var(--text)}
+.card-d{font-size:16px;color:var(--text2);text-align:center;line-height:1.5;margin-top:16px;display:none;font-weight:500}
+.card-d.show{display:block}
+.card-div{width:32px;height:1px;background:rgba(0,0,0,.1);margin-top:16px;display:none}
+.card-div.show{display:block}
+.fh{position:absolute;bottom:19px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:18px;transition:transform .3s;color:var(--text3)}
+.fh .i{width:20px;height:20px;color:var(--text3)}
+.fh.fl{transform:rotate(180deg)}
+
+.prw{padding:16px 24px 24px;flex-shrink:0}
+.prb{width:100%;height:3px;background:rgba(0,0,0,.2);border-radius:2px;overflow:hidden}
+.prf{height:100%;background:var(--cta);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+.pbb{display:flex;padding:24px 24px calc(32px + var(--sb));align-items:center;justify-content:center}
+.pb-mark{flex:1;max-width:280px;padding:16px;border-radius:296px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;line-height:20px;transition:transform .15s,opacity .15s;text-align:center}
+.pb-mark:active{transform:scale(.97);opacity:.9}
+.pb-side-arrow{position:absolute;top:0;bottom:0;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;z-index:2;color:rgba(0,0,0,.2)}
+.pb-side-left{left:0}
+.pb-side-right{right:0}
+.pb-side-arrow:active{color:rgba(0,0,0,.45)}
+
+/* Modal */
+.mo{position:fixed;left:0;right:0;bottom:0;top:0;background:rgba(0,0,0,0);z-index:50;display:none;flex-direction:column;justify-content:flex-end;transition:background .3s}
+.mo.show{display:flex;background:rgba(0,0,0,.3)}
+.mp{background:var(--white);border-radius:38px;padding:0;max-height:85%;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);width:calc(100% - 12px);max-width:480px;margin:6px auto calc(38px + var(--kb,0px))}
+.mo.show .mp{transform:translateY(0)}
+.mo-head{position:relative;display:flex;align-items:center;padding:16px;gap:8px}
+.mo-head::before{content:'';width:36px;flex-shrink:0}
+.mt{flex:1;font-size:18px;font-weight:600;color:var(--text);text-align:center}
+.mo-x{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);flex-shrink:0}
+.mo-x:active{opacity:.7}
+.mo-x .i{width:12px;height:12px}
+.mo-notif{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;display:flex;align-items:center;gap:5px;padding:5px 12px 5px 8px;border-radius:30px;font-size:12px;font-weight:600;z-index:2;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s;box-shadow:0 2px 8px rgba(54,164,68,.3)}
+.mo-notif.show{opacity:1}
+.mo-notif .i{width:12px;height:12px}
+.mo-content{padding:0 16px 16px;display:flex;flex-direction:column;gap:16px}
+
+/* Input fields */
+.inf-group{background:var(--bg);border:.5px solid rgba(0,0,0,.1);border-radius:var(--rad);overflow:hidden}
+.inf-group .inf-row{display:flex;align-items:center;padding:0 16px;height:44px}
+.inf-group .inf-row+.inf-row{border-top:.5px solid rgba(0,0,0,.08)}
+.inf-row input{flex:1;background:transparent;border:none;font-size:14px;font-weight:500;color:var(--text);font-family:inherit;outline:none;min-width:0}
+.inf-row input::placeholder{color:rgba(0,0,0,.4);font-weight:400}
+
+/* Picker sheet items */
+.pki-list{background:var(--bg);border:.5px solid rgba(0,0,0,.1);border-radius:var(--radsm);overflow:hidden}
+.pki{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:54px;border-bottom:.5px solid rgba(0,0,0,.06);font-size:16px;font-weight:500;color:var(--text2);cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.pki:last-child{border-bottom:none}
+.pki:active{background:rgba(0,0,0,.05)}
+.pki.sel{color:var(--text)}
+.pki .i.ck{width:16px;height:16px;color:var(--green);opacity:0;flex-shrink:0}
+.pki.sel .i.ck{opacity:1}
+
+/* Folder selector */
+.fsel-row{display:flex;align-items:center;gap:8px}
+.fsel-native-wrap{flex:1;min-width:0;background:var(--bg);border:.5px solid rgba(0,0,0,.1);border-radius:500px;padding:0 12px 0 16px;height:44px;display:flex;align-items:center;gap:10px}
+.fsel-native-wrap .i{flex-shrink:0;pointer-events:none}
+.fsel-native-wrap .i.fp-icon{width:20px;height:20px;color:#8E8E93}
+.fsel-native-wrap .i.fp-ch{width:14px;height:14px}
+.fsel-native{flex:1;background:transparent;border:none;font-size:14px;font-weight:500;color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer;min-width:0}
+.fsel-add-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;color:var(--text);flex-shrink:0;transition:transform .15s}
+.fsel-add-btn:active{transform:scale(.9)}
+.fsel-add-btn .i{width:12px;height:12px}
+.fsel-new-row{display:none;align-items:center;gap:8px}
+.fsel-new-row.show{display:flex}
+.fsel-inp-pill{flex:1;min-width:0;background:var(--bg);border:.5px solid rgba(0,0,0,.1);border-radius:500px;padding:0 16px;height:44px;display:flex;align-items:center;gap:10px}
+.fsel-inp-pill .i{width:20px;height:20px;flex-shrink:0;color:var(--text2)}
+.fsel-inp-pill input{flex:1;background:transparent;border:none;outline:none;font-size:14px;font-weight:500;color:var(--text);font-family:inherit;min-width:0}
+.fsel-inp-pill input::placeholder{color:rgba(0,0,0,.4);font-weight:400}
+.fsel-action-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .15s}
+.fsel-action-btn:active{transform:scale(.9)}
+.fsel-action-btn .i{width:12px;height:12px}
+.fsel-action-btn.cancel{border:1px solid rgba(0,0,0,.1);background:transparent;color:var(--text)}
+.fsel-action-btn.confirm{border:none;background:#000;color:#fff}
+
+.mo-btns{display:flex;gap:16px;align-items:center}
+.msave{flex:1;height:44px;border-radius:500px;border:none;background:#000;color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .15s,opacity .15s;text-align:center}
+.msave:active{transform:scale(.98)}
+.msave:disabled{opacity:.2;pointer-events:none}
+.auth-social-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:44px;border-radius:500px;border:.5px solid rgba(0,0,0,.15);background:#fff;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .15s,opacity .15s}
+.auth-social-btn:active{transform:scale(.98)}
+.mdel-icon{width:44px;height:44px;border-radius:500px;background:var(--red-bg);border:.5px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--red);transition:transform .15s}
+.mdel-icon:active{transform:scale(.92)}
+.mdel-icon .i{width:18px;height:18px}
+
+/* Context menu */
+.ctx{position:absolute;top:0;right:24px;min-width:200px;background:var(--white);border:1px solid rgba(0,0,0,.08);border-radius:var(--radsm);padding:6px;z-index:55;display:none;box-shadow:0 8px 30px rgba(0,0,0,.12);animation:fadeIn .15s ease}
+.ctx.show{display:block}
+.ctx-i{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radxs);font-size:14px;color:var(--text);cursor:pointer;font-weight:500;transition:background .1s}
+.ctx-i:active{background:rgba(0,0,0,.04)}
+.ctx-i .i{width:16px;height:16px;color:var(--text)}
+.ctx-i.dng{color:var(--red)}
+.ctx-i.dng .i{color:var(--red)}
+
+/* Toast */
+.toast{position:fixed;top:calc(var(--st) + 12px);left:50%;transform:translateX(-50%) translateY(-80px);background:var(--green);color:#fff;padding:10px 20px;border-radius:30px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;z-index:100;transition:transform .4s cubic-bezier(.4,0,.2,1);white-space:nowrap;max-width:480px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast .i{width:16px;height:16px;color:#fff}
+
+/* Done */
+.dnb{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:30px;background:transparent;border:1px solid rgba(0,0,0,.1);font-size:14px;font-weight:500;color:var(--text);font-family:inherit;cursor:pointer;transition:transform .15s}
+.dnb:active{transform:scale(.95)}
+.dnb .i{width:14px;height:14px;color:var(--text)}
+
+/* Stacked cards behind */
+.deck{position:relative;width:272px}
+.deck-bg{position:absolute;inset:0;pointer-events:none}
+.deck-ghost{width:272px;min-height:300px;background:var(--white);border:1px solid rgba(0,0,0,.1);border-radius:var(--rad);position:absolute;top:50%;left:50%;margin-left:-136px;margin-top:-150px}
+
+/* Empty folder state */
+.fc-empty{border:0.5px dashed rgba(0,0,0,.25);border-radius:var(--rad);padding:24px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;color:var(--text2);min-height:72px;margin-bottom:4px;cursor:pointer}
+.fc-empty:active{opacity:.6}
+
+
+/* Word checkmark — prevent layout shift */
+.wchk{will-change:transform}
+.wchk:not(.known){border-width:0.5px}
+
+
+/* Delete confirm */
+.del-icon-wrap{width:56px;height:56px;border-radius:50%;background:var(--red-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.del-icon-wrap .i{width:24px;height:24px;color:var(--red)}
+.del-title{font-size:19px;font-weight:700;text-align:center;margin-bottom:8px}
+.del-sub{font-size:14px;color:var(--text2);font-weight:500;text-align:center;line-height:1.5}
+.del-sub b{color:var(--text);font-weight:600}
+.btn-cancel{flex:1;height:48px;border-radius:500px;border:none;background:rgba(0,0,0,.06);color:var(--text);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .15s,opacity .15s}
+.btn-cancel:active{transform:scale(.98);opacity:.8}
+.btn-del{flex:1;height:48px;border-radius:500px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .15s,opacity .15s}
+.btn-del:active{transform:scale(.98);opacity:.9}
+
+/* Animations */
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.an{animation:slideUp .3s cubic-bezier(.4,0,.2,1) forwards}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="i" data-icon="check"></span><span id="toastMsg">Word added</span></div>
+
+<!-- HOME -->
+<div class="scr on" id="sH">
+  <div class="hdr">
+    <div class="logo"><img src="icons/logo.svg" alt="Muno" style="height:20px"></div>
+    <button class="btn-user" id="btnUser" onclick="openUserModal()" title="Account"><img src="icons/User.svg" class="btn-user-ic" alt=""><span id="btnUserLabel">Save your progress</span></button>
+  </div>
+  <div class="scr-body">
+    <div class="stats an">
+      <div class="stat">
+        <div class="stat-icon">
+          <span class="i" data-icon="student" style="color:#676767"></span>
+          <svg class="stat-ring" id="stRing" viewBox="0 0 54 54"><circle cx="27" cy="27" r="26" stroke="transparent"/><circle cx="27" cy="27" r="26" stroke="var(--green)" id="stRingFill" stroke-dasharray="0 163.36"/></svg>
+        </div>
+        <div class="stat-info"><div class="stat-l">Words learned</div><div class="stat-v" id="stW">0 / 0</div></div>
+      </div>
+      <div class="stat">
+        <div class="stat-icon"><span class="i" data-icon="fire" style="color:var(--red)"></span></div>
+        <div class="stat-info"><div class="stat-l">Day streak</div><div class="stat-v" id="stS">0</div></div>
+      </div>
+    </div>
+    <div class="cta an" onclick="ctaGo()">
+      <div class="cta-info"><div class="cta-t">Begin practice</div><div class="cta-sub">Mixed words from all folders</div></div>
+      <div class="cta-play"><span class="i" data-icon="play"></span></div>
+    </div>
+    <div class="sec an"><span class="sec-t">All folders</span><div style="display:flex;gap:6px"><button class="sec-add" id="btnFolderEdit" onclick="toggleFolderEditMode()"><span class="i" data-icon="pencil"></span></button><button class="sec-add" onclick="addFolder()"><span class="i" data-icon="plus"></span></button></div></div>
+    <div id="fList"></div>
+  </div>
+
+</div>
+
+<!-- FOLDER -->
+<div class="scr" id="sF">
+  <div class="hdr" style="padding:24px 24px 11px">
+    <button class="btn36" onclick="goH()"><span class="i" data-icon="caret-left"></span></button>
+    <div class="hdr-t"><div class="hdr-t-name" id="fT"></div><div class="hdr-t-sub" id="fTSub"></div></div>
+    <button class="hdr-dots" onclick="togCtx()"><span class="i" data-icon="dots"></span></button>
+  </div>
+  <div style="position:relative">
+    <div class="ctx" id="ctxM">
+      <div class="ctx-i" onclick="renF()"><span class="i" data-icon="pencil"></span>Rename folder</div>
+      <div class="ctx-i dng" id="ctxD" onclick="delFCtx()"><span class="i" data-icon="trash"></span>Remove folder</div>
+    </div>
+  </div>
+  <div class="scr-body" id="fBody">
+    <div class="fo-actions">
+      <button class="fo-play" id="bFP"><span class="fo-play-circle"><span class="i" data-icon="play"></span></span><span class="fo-play-label">Begin practice</span></button>
+      <button class="fo-edit" id="bFE" onclick="togWE()"><span class="i" data-icon="pencil"></span><span>Edit words</span></button>
+    </div>
+    <div id="wList"></div>
+  </div>
+
+</div>
+
+<!-- PRACTICE -->
+<div class="scr" id="sP">
+  <div class="ph">
+    <button class="pcl" onclick="closeP()"><span class="i" data-icon="x"></span></button>
+    <div class="ph-filters">
+      <div class="pill" id="ddB"><span id="ddL">All folders</span><span class="i ch" data-icon="caret-down"></span><select class="pill-sel" id="ddBSel" onchange="onFolderSel(this)"></select></div>
+      <div class="pill" id="ddFilt"><span id="ddFiltL">Not learned</span><span class="i ch" data-icon="caret-down"></span><select class="pill-sel" id="ddFiltSel" onchange="onFiltSel(this)"><option value="not_learned">Not learned</option><option value="learned">Learned</option><option value="all">All words</option></select></div>
+    </div>
+  </div>
+  <div class="prw"><div class="prb"><div class="prf" id="pFill"></div></div></div>
+  <div class="pbody">
+    <button class="pb-side-arrow pb-side-left" onclick="prevCard()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.7957 18.7041C16.0071 18.9154 16.1258 19.2021 16.1258 19.501C16.1258 19.7999 16.0071 20.0865 15.7957 20.2978C15.5844 20.5092 15.2977 20.6279 14.9989 20.6279C14.7 20.6279 14.4133 20.5092 14.202 20.2978L6.70198 12.7978C6.5971 12.6933 6.51388 12.5691 6.4571 12.4324C6.40032 12.2956 6.37109 12.149 6.37109 12.001C6.37109 11.8529 6.40032 11.7063 6.4571 11.5696C6.51388 11.4328 6.5971 11.3086 6.70198 11.2041L14.202 3.7041C14.4133 3.49276 14.7 3.37402 14.9989 3.37402C15.2977 3.37402 15.5844 3.49276 15.7957 3.7041C16.0071 3.91544 16.1258 4.20209 16.1258 4.50097C16.1258 4.79986 16.0071 5.08651 15.7957 5.29785L9.09354 12L15.7957 18.7041Z"/></svg></button>
+    <button class="pb-side-arrow pb-side-right" onclick="nxt(0)"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8.20432 5.29585C7.99298 5.08451 7.87424 4.79787 7.87424 4.49898C7.87424 4.2001 7.99298 3.91345 8.20432 3.70211C8.41566 3.49076 8.70231 3.37203 9.00119 3.37203C9.30008 3.37203 9.58672 3.49076 9.79807 3.70211L17.2981 11.2021C17.4029 11.3066 17.4862 11.4308 17.5429 11.5676C17.5997 11.7043 17.6289 11.8509 17.6289 11.999C17.6289 12.1471 17.5997 12.2936 17.5429 12.4304C17.4862 12.5671 17.4029 12.6913 17.2981 12.7959L9.79807 20.2959C9.58672 20.5072 9.30008 20.6259 9.00119 20.6259C8.70231 20.6259 8.41566 20.5072 8.20432 20.2959C7.99298 20.0845 7.87424 19.7979 7.87424 19.499C7.87424 19.2001 7.99298 18.9135 8.20432 18.7021L14.9065 12L8.20432 5.29585Z"/></svg></button>
+    <div class="ca" id="cArea"></div>
+  </div>
+  <div class="pbb" id="pBB">
+    <button class="pb-mark" onclick="nxt(1)">Mark as known</button>
+  </div>
+</div>
+
+
+<!-- ADD/EDIT WORD -->
+<div class="mo" id="mW" onclick="clMo(event)">
+  <div class="mp" id="mpW" onclick="event.stopPropagation()">
+    <div class="mo-head">
+      <div class="mt" id="mTi">Add new word</div>
+      <button class="mo-x" onclick="closeMo('mW')"><span class="i" data-icon="x"></span></button>
+      <div class="mo-notif" id="moNotif"><span class="i" data-icon="check"></span><span>Word added</span></div>
+    </div>
+    <div class="mo-content">
+      <div class="inf-group">
+        <div class="inf-row">
+          <input id="iT" placeholder="Word or phrase" oninput="valM()" onkeydown="if(event.key==='Enter'){event.preventDefault();$('iD').focus()}" enterkeyhint="next" inputmode="text" autocomplete="off" autocapitalize="off">
+        </div>
+        <div class="inf-row">
+          <input id="iD" placeholder="Definition or translate" oninput="valM()" onkeydown="if(event.key==='Enter'){event.preventDefault();saveW()}" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="off">
+        </div>
+      </div>
+      <div id="fSelWrap">
+        <div class="fsel-row" id="fPillRow">
+          <div class="fsel-native-wrap">
+            <span class="i fp-icon" data-icon="folder"></span>
+            <select class="fsel-native" id="fSel" onchange="pk=this.selectedIndex" tabindex="-1"></select>
+            <span class="i fp-ch" data-icon="caret-down"></span>
+          </div>
+          <button class="fsel-add-btn" onclick="showInlineFolderInput()"><span class="i" data-icon="plus"></span></button>
+        </div>
+        <div class="fsel-new-row" id="fNewRow">
+          <div class="fsel-inp-pill">
+            <span class="i" data-icon="folder"></span>
+            <input id="fNewInp" placeholder="Enter new folder name" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="-1" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmNewFolder()}" enterkeyhint="done">
+          </div>
+          <button class="fsel-action-btn cancel" onclick="cancelNewFolder()"><span class="i" data-icon="x"></span></button>
+          <button class="fsel-action-btn confirm" id="fNewConfirm" onclick="confirmNewFolder()"><span class="i" data-icon="check"></span></button>
+        </div>
+      </div>
+      <div class="mo-btns">
+        <button class="mdel-icon" id="bDl" onclick="delW()" style="display:none"><span class="i" data-icon="trash"></span></button>
+        <button class="msave" id="bSv" disabled onclick="saveW()">Add word</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME -->
+<div class="mo" id="mR" onclick="clMo(event)">
+  <div class="mp" id="mpR" onclick="event.stopPropagation()">
+    <div class="mo-head">
+      <div class="mt">Edit folder name</div>
+      <button class="mo-x" onclick="closeMo('mR')"><span class="i" data-icon="x"></span></button>
+    </div>
+    <div class="mo-content">
+      <div class="inf-group">
+        <div class="inf-row">
+          <input id="iR" placeholder="Folder name" oninput="$('bRn').disabled=!this.value.trim()" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="mo-btns"><button class="msave" id="bRn" disabled onclick="saveR()">Save</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD FOLDER -->
+<div class="mo" id="mNF" onclick="clMo(event)">
+  <div class="mp" id="mpNF" onclick="event.stopPropagation()">
+    <div class="mo-head">
+      <div class="mt">New folder</div>
+      <button class="mo-x" onclick="closeMo('mNF')"><span class="i" data-icon="x"></span></button>
+    </div>
+    <div class="mo-content">
+      <div class="inf-group">
+        <div class="inf-row">
+          <input id="iNF" placeholder="Folder name" oninput="$('bNF').disabled=!this.value.trim()" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="mo-btns"><button class="msave" id="bNF" disabled onclick="saveNF()">Create folder</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- HELP -->
+<div class="mo" id="mHelp" onclick="clMo(event)">
+  <div class="mp" id="mpHelp" onclick="event.stopPropagation()">
+    <div class="mo-head">
+      <div class="mt">How to use Muno</div>
+      <button class="mo-x" onclick="closeMo('mHelp')"><span class="i" data-icon="x"></span></button>
+    </div>
+    <div class="mo-content">
+      <div style="font-size:14px;color:var(--text2);line-height:1.7;font-weight:500">
+        <p style="margin-bottom:12px"><b style="color:var(--text)">Add words</b> — tap the + button to add new words with definitions.</p>
+        <p style="margin-bottom:12px"><b style="color:var(--text)">Organize</b> — create folders to group words by topic or language.</p>
+        <p style="margin-bottom:12px"><b style="color:var(--text)">Practice</b> — tap "Begin practice" to review flashcards. Swipe right or tap "Mark as known" when you know a word.</p>
+        <p style="margin-bottom:12px"><b style="color:var(--text)">Track progress</b> — the progress ring shows how many words you've learned.</p>
+        <p><b style="color:var(--text)">Tip:</b> Swipe left/right on cards during practice!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="mo" id="mDelConfirm" onclick="clMo(event)">
+  <div class="mp" id="mpDelConfirm" onclick="event.stopPropagation()">
+    <div class="mo-content" style="padding:28px 16px 20px">
+      <div>
+        <div class="del-icon-wrap"><span class="i" data-icon="trash"></span></div>
+        <div class="del-title">Delete folder?</div>
+        <div class="del-sub">This will permanently delete <b id="delConfirmName"></b> and all its words.</div>
+      </div>
+      <div class="mo-btns" style="margin-top:8px">
+        <button class="btn-cancel" onclick="closeMo('mDelConfirm')">Cancel</button>
+        <button class="btn-del" onclick="execDelConfirm()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH (login / sign up) -->
+<div class="mo" id="mAuth" onclick="clMo(event)">
+  <div class="mp" onclick="event.stopPropagation()">
+    <div class="mo-head">
+      <div class="mt" id="authTitle">Log in</div>
+      <button class="mo-x" onclick="closeMo('mAuth')"><span class="i" data-icon="x"></span></button>
+    </div>
+    <div class="mo-content">
+      <!-- Social buttons view -->
+      <div id="authSocial" style="display:flex;flex-direction:column;gap:10px">
+        <button class="auth-social-btn" onclick="signInWithProvider('google')">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+<button class="auth-social-btn" onclick="showAuthEmail()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="3.5" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 6l7.447 4.647a1 1 0 0 0 1.106 0L17 6" stroke="currentColor" stroke-width="1.5"/></svg>
+          Continue with Email
+        </button>
+      </div>
+      <!-- Email/password view (hidden by default) -->
+      <div id="authEmail" style="display:none;flex-direction:column;gap:16px">
+        <div class="inf-group">
+          <div class="inf-row">
+            <input id="iAuthEmail" type="email" placeholder="Email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();$('iAuthPass').focus()}" enterkeyhint="next">
+          </div>
+          <div class="inf-row" style="position:relative">
+            <input id="iAuthPass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();submitAuth()}" enterkeyhint="go" style="padding-right:110px">
+            <span id="bForgot" onclick="showAuthReset()" style="position:absolute;right:16px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;white-space:nowrap">Forgot password?</span>
+          </div>
+        </div>
+        <div id="authErr" style="font-size:13px;color:var(--red);font-weight:500;text-align:center;line-height:18px;display:none"></div>
+        <div class="mo-btns" style="margin:0">
+          <button class="msave" id="bAuthSubmit" onclick="submitAuth()">Log in</button>
+        </div>
+        <div id="authToggle" style="text-align:center;font-size:13px;color:var(--text2);font-weight:500">
+          Don't have an account? <span onclick="toggleAuthMode()" style="color:var(--text);text-decoration:underline;cursor:pointer">Create account</span>
+        </div>
+      </div>
+      <!-- Forgot password view -->
+      <div id="authReset" style="display:none;flex-direction:column;gap:16px">
+        <div id="authResetForm" style="display:contents">
+          <div class="inf-group">
+            <div class="inf-row">
+              <input id="iResetEmail" type="email" placeholder="Email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();submitReset()}" enterkeyhint="go">
+            </div>
+          </div>
+          <div id="resetErr" style="font-size:13px;color:var(--red);font-weight:500;text-align:center;line-height:18px;display:none"></div>
+          <div class="mo-btns" style="margin:0">
+            <button class="msave" id="bResetSubmit" onclick="submitReset()">Send reset link</button>
+          </div>
+        </div>
+        <div id="authResetDone" style="display:none;flex-direction:column;gap:16px;align-items:center;padding:8px 0">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 11.5l5 5 9-9" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">Check your email</div>
+            <div id="resetDoneEmail" style="font-size:13px;color:var(--text2);font-weight:500"></div>
+          </div>
+          <button class="msave" onclick="showAuthEmail()" style="width:100%">Back to log in</button>
+        </div>
+        <div id="authResetBack" style="text-align:center;font-size:13px;color:var(--text2);font-weight:500">
+          <span onclick="showAuthEmail()" style="color:var(--text);text-decoration:underline;cursor:pointer">Back to log in</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT -->
+<div class="mo" id="mAcc" onclick="clMo(event)">
+  <div class="mp" onclick="event.stopPropagation()">
+    <div class="mo-head">
+      <div class="mt">Account</div>
+      <button class="mo-x" onclick="closeMo('mAcc')"><span class="i" data-icon="x"></span></button>
+    </div>
+    <div class="mo-content">
+      <div style="background:var(--bg);border:.5px solid rgba(0,0,0,.1);border-radius:var(--radsm);padding:12px 16px;font-size:14px;font-weight:500;color:var(--text2)" id="accEmail"></div>
+      <div style="display:grid;gap:8px">
+        <button class="msave" onclick="signOutUser()">Log out</button>
+        <button class="msave" style="background:var(--red)" onclick="confirmDeleteAccount()">Delete account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT CONFIRM -->
+<div class="mo" id="mAccDel" onclick="clMo(event)">
+  <div class="mp" onclick="event.stopPropagation()">
+    <div class="mo-content" style="padding:28px 16px 20px">
+      <div>
+        <div class="del-icon-wrap"><span class="i" data-icon="trash"></span></div>
+        <div class="del-title">Delete account?</div>
+        <div class="del-sub">This will permanently delete your account and all your synced data. This cannot be undone.</div>
+      </div>
+      <div class="mo-btns" style="margin-top:8px">
+        <button class="btn-cancel" onclick="closeMo('mAccDel')">Cancel</button>
+        <button class="btn-del" onclick="execDeleteAccount()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- FAB (outside .app to avoid overflow:hidden clipping fixed positioning) -->
+<button class="fab" id="fabBtn" onclick="fabClick()"><span class="i" data-icon="plus"></span></button>
+
+<script>
+const $=id=>document.getElementById(id);
+const SEED_V=1;
+const SV=()=>{try{localStorage.setItem('muno',JSON.stringify(D))}catch(e){}scheduleSync()};
+const LD=()=>{try{const s=localStorage.getItem('muno');if(s){const d=JSON.parse(s);if((d.sv||0)>=SEED_V)return d;}}catch(e){}return null};
+
+// Icon system
+const IC={};
+const ICONS_RAW={
+'logo':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>',
+'folder':'<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 4.25H8.33687L6.71187 2.41938C6.59422 2.28707 6.44981 2.18126 6.28818 2.10896C6.12656 2.03666 5.95143 1.99953 5.77437 2H2.5C2.16848 2 1.85054 2.1317 1.61612 2.36612C1.3817 2.60054 1.25 2.91848 1.25 3.25V12.5388C1.2505 12.8598 1.37827 13.1676 1.60531 13.3947C1.83236 13.6217 2.14016 13.7495 2.46125 13.75H13.5556C13.8723 13.7497 14.1759 13.6237 14.3998 13.3998C14.6237 13.1759 14.7497 12.8723 14.75 12.5556V5.5C14.75 5.16848 14.6183 4.85054 14.3839 4.61612C14.1495 4.3817 13.8315 4.25 13.5 4.25ZM2.75 3.5H5.66313L6.33 4.25H2.75V3.5ZM13.25 12.25H2.75V5.75H13.25V12.25Z" fill="currentColor"/></svg>',
+'student':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.3551 4.93311L12.3551 1.93311C12.1246 1.85531 11.875 1.85531 11.6445 1.93311L2.64448 4.93311C2.42973 5.00423 2.24141 5.13845 2.10411 5.31823C1.9668 5.49802 1.88689 5.71502 1.87479 5.94092C1.87377 5.96059 1.87377 5.98031 1.87479 5.99998V13.5C1.87479 13.7984 1.99332 14.0845 2.2043 14.2955C2.41528 14.5065 2.70142 14.625 2.99979 14.625C3.29816 14.625 3.58431 14.5065 3.79529 14.2955C4.00627 14.0845 4.12479 13.7984 4.12479 13.5V7.56092L6.34761 8.30155C5.65775 9.62201 5.45275 11.1426 5.76828 12.5986C6.0838 14.0546 6.89988 15.3539 8.07448 16.2703C6.53738 17.0283 5.23651 18.1917 4.31229 19.635C4.22906 19.7587 4.17125 19.8977 4.14222 20.0439C4.11319 20.1902 4.11352 20.3407 4.14318 20.4868C4.17284 20.6329 4.23125 20.7717 4.31501 20.895C4.39877 21.0184 4.50622 21.1238 4.63109 21.2053C4.75597 21.2867 4.89579 21.3425 5.04243 21.3695C5.18907 21.3964 5.3396 21.3939 5.48527 21.3622C5.63094 21.3304 5.76885 21.27 5.89097 21.1845C6.0131 21.099 6.11701 20.9901 6.19667 20.864C7.53448 18.8053 9.65604 17.625 11.9998 17.625C14.3435 17.625 16.4651 18.8053 17.8076 20.864C17.8873 20.9901 17.9912 21.099 18.1133 21.1845C18.2354 21.27 18.3733 21.3304 18.519 21.3622C18.6647 21.3939 18.8152 21.3964 18.9618 21.3695C19.1085 21.3425 19.2483 21.2867 19.3732 21.2053C19.4981 21.1238 19.6055 21.0184 19.6893 20.895C19.773 20.7717 19.8314 20.6329 19.8611 20.4868C19.8908 20.3407 19.8911 20.1902 19.8621 20.0439C19.833 19.8977 19.7752 19.7587 19.692 19.635C18.7669 18.19 17.4643 17.0255 15.9251 16.2675C17.0997 15.3511 17.9158 14.0518 18.2313 12.5958C18.5468 11.1398 18.3418 9.6192 17.652 8.29873L21.3551 7.06405C21.5788 6.9892 21.7733 6.84592 21.9112 6.65447C22.049 6.46301 22.1232 6.23308 22.1232 5.99717C22.1232 5.76127 22.049 5.53133 21.9112 5.33988C21.7733 5.14842 21.5788 5.00514 21.3551 4.9303V4.93311ZM11.9998 4.18311L17.442 5.99998L11.9998 7.81405L6.56229 5.99998L11.9998 4.18311ZM16.1248 11.25C16.1249 11.8907 15.9758 12.5226 15.6892 13.0957C15.4026 13.6688 14.9865 14.1672 14.4738 14.5515C13.9612 14.9358 13.366 15.1953 12.7356 15.3096C12.1051 15.4239 11.4567 15.3897 10.8418 15.2099C10.2268 15.03 9.66221 14.7093 9.19272 14.2733C8.72324 13.8373 8.36177 13.2979 8.13699 12.698C7.9122 12.098 7.83027 11.4539 7.89769 10.8167C7.96512 10.1795 8.18004 9.56683 8.52542 9.02717L11.6445 10.0669C11.875 10.1444 12.1246 10.1444 12.3551 10.0669L15.4742 9.02717C15.8996 9.69044 16.1254 10.462 16.1248 11.25Z" fill="currentColor"/></svg>',
+'fire':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.6519 14.9626C16.4164 15.7112 16.0036 16.3919 15.4487 16.9469C14.8937 17.5018 14.213 17.9146 13.4644 18.1501C13.3551 18.1841 13.2413 18.2014 13.1269 18.2016C12.8579 18.2018 12.5979 18.1057 12.3937 17.9306C12.1896 17.7556 12.0549 17.5132 12.0141 17.2473C11.9733 16.9815 12.029 16.7099 12.1713 16.4817C12.3135 16.2534 12.5328 16.0837 12.7894 16.0032C13.1928 15.8764 13.5597 15.6541 13.8587 15.355C14.1578 15.056 14.3801 14.6892 14.5069 14.2857C14.5512 14.1447 14.6228 14.0139 14.7177 13.9006C14.8126 13.7873 14.9289 13.6939 15.0599 13.6255C15.3245 13.4875 15.6331 13.4603 15.9178 13.5498C16.0588 13.5941 16.1896 13.6657 16.3029 13.7606C16.4162 13.8555 16.5097 13.9718 16.578 14.1028C16.6463 14.2338 16.6882 14.377 16.7012 14.5242C16.7142 14.6714 16.6981 14.8197 16.6537 14.9607L16.6519 14.9626ZM20.625 13.5001C20.625 15.7876 19.7163 17.9814 18.0988 19.5989C16.4813 21.2164 14.2875 22.1251 12 22.1251C9.71251 22.1251 7.51871 21.2164 5.9012 19.5989C4.2837 17.9814 3.375 15.7876 3.375 13.5001C3.375 10.7991 4.43156 8.0457 6.51375 5.31758C6.6102 5.19116 6.73235 5.08663 6.87215 5.01088C7.01195 4.93512 7.16622 4.88986 7.32479 4.87807C7.48336 4.86629 7.64262 4.88826 7.79208 4.94252C7.94154 4.99679 8.0778 5.08212 8.19187 5.19289L10.0378 6.98445L11.9062 1.86476C11.968 1.69537 12.0696 1.54331 12.2025 1.4214C12.3353 1.29948 12.4955 1.21128 12.6696 1.16423C12.8436 1.11717 13.0264 1.11265 13.2026 1.15103C13.3788 1.18941 13.5432 1.26957 13.6819 1.38476C15.7688 3.11726 20.625 7.76726 20.625 13.5001ZM18.375 13.5001C18.375 9.58976 15.5053 6.15101 13.4512 4.19164L11.5566 9.38539C11.4923 9.56169 11.3849 9.7191 11.2442 9.84329C11.1035 9.96748 10.934 10.0545 10.7511 10.0964C10.5681 10.1384 10.3776 10.1339 10.1969 10.0834C10.0162 10.0329 9.85093 9.93795 9.71625 9.80727L7.56656 7.72133C6.28125 9.69195 5.625 11.6307 5.625 13.5001C5.625 15.1908 6.29665 16.8123 7.49219 18.0079C8.68774 19.2034 10.3092 19.8751 12 19.8751C13.6908 19.8751 15.3123 19.2034 16.5078 18.0079C17.7034 16.8123 18.375 15.1908 18.375 13.5001Z" fill="currentColor"/></svg>',
+'play':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.9834 10.4127L8.47594 2.15051C8.19267 1.97782 7.86865 1.88338 7.53696 1.87683C7.20526 1.87028 6.87777 1.95186 6.58791 2.11323C6.29804 2.27461 6.05618 2.51 5.88702 2.79539C5.71785 3.08078 5.62744 3.40594 5.625 3.73769V20.2621C5.62744 20.5938 5.71785 20.919 5.88702 21.2044C6.05618 21.4898 6.29804 21.7252 6.58791 21.8865C6.87777 22.0479 7.20526 22.1295 7.53696 22.1229C7.86865 22.1164 8.19267 22.0219 8.47594 21.8493L21.9834 13.5871C22.2558 13.4213 22.4809 13.1882 22.6371 12.9102C22.7934 12.6322 22.8754 12.3187 22.8754 11.9999C22.8754 11.681 22.7934 11.3675 22.6371 11.0896C22.4809 10.8116 22.2558 10.5785 21.9834 10.4127ZM7.875 19.5796V4.42019L20.265 11.9999L7.875 19.5796Z" fill="currentColor"/></svg>',
+'plus':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.375 12C21.375 12.2984 21.2565 12.5845 21.0455 12.7955C20.8345 13.0065 20.5484 13.125 20.25 13.125H13.125V20.25C13.125 20.5484 13.0065 20.8345 12.7955 21.0455C12.5845 21.2565 12.2984 21.375 12 21.375C11.7016 21.375 11.4155 21.2565 11.2045 21.0455C10.9935 20.8345 10.875 20.5484 10.875 20.25V13.125H3.75C3.45163 13.125 3.16548 13.0065 2.9545 12.7955C2.74353 12.5845 2.625 12.2984 2.625 12C2.625 11.7016 2.74353 11.4155 2.9545 11.2045C3.16548 10.9935 3.45163 10.875 3.75 10.875H10.875V3.75C10.875 3.45163 10.9935 3.16548 11.2045 2.9545C11.4155 2.74353 11.7016 2.625 12 2.625C12.2984 2.625 12.5845 2.74353 12.7955 2.9545C13.0065 3.16548 13.125 3.45163 13.125 3.75V10.875H20.25C20.5484 10.875 20.8345 10.9935 21.0455 11.2045C21.2565 11.4155 21.375 11.7016 21.375 12Z" fill="currentColor"/></svg>',
+'x':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19.5459 17.954C19.7572 18.1653 19.876 18.452 19.876 18.7509C19.876 19.0497 19.7572 19.3364 19.5459 19.5477C19.3346 19.7591 19.0479 19.8778 18.749 19.8778C18.4501 19.8778 18.1635 19.7591 17.9521 19.5477L12 13.5937L6.0459 19.5459C5.83455 19.7572 5.54791 19.8759 5.24902 19.8759C4.95014 19.8759 4.66349 19.7572 4.45215 19.5459C4.2408 19.3345 4.12207 19.0479 4.12207 18.749C4.12207 18.4501 4.2408 18.1635 4.45215 17.9521L10.4062 11.9999L4.45402 6.04586C4.24268 5.83451 4.12395 5.54787 4.12395 5.24898C4.12395 4.9501 4.24268 4.66345 4.45402 4.45211C4.66537 4.24076 4.95201 4.12203 5.2509 4.12203C5.54978 4.12203 5.83643 4.24076 6.04777 4.45211L12 10.4062L17.954 4.45117C18.1654 4.23983 18.452 4.12109 18.7509 4.12109C19.0498 4.12109 19.3364 4.23983 19.5478 4.45117C19.7591 4.66251 19.8778 4.94916 19.8778 5.24804C19.8778 5.54693 19.7591 5.83358 19.5478 6.04492L13.5937 11.9999L19.5459 17.954Z" fill="currentColor"/></svg>',
+'pencil':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5766 6.61321L17.3869 2.42446C17.0353 2.07295 16.5584 1.87549 16.0613 1.87549C15.5641 1.87549 15.0872 2.07295 14.7356 2.42446L3.17438 13.9848C2.99968 14.1584 2.86116 14.365 2.76686 14.5925C2.67255 14.8201 2.62434 15.0641 2.62501 15.3104V19.5001C2.62501 19.9974 2.82255 20.4743 3.17418 20.8259C3.52581 21.1775 4.00273 21.3751 4.50001 21.3751H20.25C20.5484 21.3751 20.8345 21.2566 21.0455 21.0456C21.2565 20.8346 21.375 20.5485 21.375 20.2501C21.375 19.9517 21.2565 19.6656 21.0455 19.4546C20.8345 19.2436 20.5484 19.1251 20.25 19.1251H11.7188L21.5766 9.2654C21.7508 9.09128 21.8889 8.88455 21.9832 8.65701C22.0775 8.42948 22.126 8.1856 22.126 7.93931C22.126 7.69301 22.0775 7.44913 21.9832 7.2216C21.8889 6.99406 21.7508 6.78733 21.5766 6.61321ZM8.53126 19.1251H4.87501V15.4688L12.75 7.59384L16.4063 11.2501L8.53126 19.1251ZM18 9.65634L14.3438 6.00009L16.0631 4.28071L19.7194 7.93696L18 9.65634Z" fill="currentColor"/></svg>',
+'check':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.7959 7.54597L9.7959 19.546C9.69138 19.6509 9.56719 19.7341 9.43044 19.7909C9.2937 19.8476 9.14709 19.8769 8.99902 19.8769C8.85096 19.8769 8.70435 19.8476 8.5676 19.7909C8.43086 19.7341 8.30666 19.6509 8.20215 19.546L2.95215 14.296C2.8475 14.1913 2.76449 14.0671 2.70785 13.9304C2.65122 13.7936 2.62207 13.6471 2.62207 13.4991C2.62207 13.3511 2.65122 13.2046 2.70785 13.0678C2.76449 12.9311 2.8475 12.8069 2.95215 12.7022C3.05679 12.5976 3.18103 12.5146 3.31776 12.4579C3.45448 12.4013 3.60103 12.3721 3.74902 12.3721C3.89702 12.3721 4.04356 12.4013 4.18029 12.4579C4.31702 12.5146 4.44125 12.5976 4.5459 12.7022L8.99996 17.1563L20.204 5.9541C20.4154 5.74276 20.702 5.62402 21.0009 5.62402C21.2998 5.62402 21.5864 5.74276 21.7978 5.9541C22.0091 6.16544 22.1278 6.45209 22.1278 6.75098C22.1278 7.04986 22.0091 7.33651 21.7978 7.54785L21.7959 7.54597Z" fill="currentColor"/></svg>',
+'grip':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>',
+'trash':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.25 4.5H16.875V3.375C16.875 2.67881 16.5984 2.01113 16.1062 1.51884C15.6139 1.02656 14.9462 0.75 14.25 0.75H9.75C9.05381 0.75 8.38613 1.02656 7.89384 1.51884C7.40156 2.01113 7.125 2.67881 7.125 3.375V4.5H3.75C3.45163 4.5 3.16548 4.61853 2.9545 4.8295C2.74353 5.04048 2.625 5.32663 2.625 5.625C2.625 5.92337 2.74353 6.20952 2.9545 6.4205C3.16548 6.63147 3.45163 6.75 3.75 6.75H4.125V19.5C4.125 19.9973 4.32254 20.4742 4.67417 20.8258C5.02581 21.1775 5.50272 21.375 6 21.375H18C18.4973 21.375 18.9742 21.1775 19.3258 20.8258C19.6775 20.4742 19.875 19.9973 19.875 19.5V6.75H20.25C20.5484 6.75 20.8345 6.63147 21.0455 6.4205C21.2565 6.20952 21.375 5.92337 21.375 5.625C21.375 5.32663 21.2565 5.04048 21.0455 4.8295C20.8345 4.61853 20.5484 4.5 20.25 4.5ZM9.375 3.375C9.375 3.27554 9.41451 3.18016 9.48483 3.10984C9.55516 3.03951 9.65054 3 9.75 3H14.25C14.3495 3 14.4448 3.03951 14.5152 3.10984C14.5855 3.18016 14.625 3.27554 14.625 3.375V4.5H9.375V3.375ZM17.625 19.125H6.375V6.75H17.625V19.125ZM10.875 9.75V15.75C10.875 16.0484 10.7565 16.3345 10.5455 16.5455C10.3345 16.7565 10.0484 16.875 9.75 16.875C9.45163 16.875 9.16548 16.7565 8.9545 16.5455C8.74353 16.3345 8.625 16.0484 8.625 15.75V9.75C8.625 9.45163 8.74353 9.16548 8.9545 8.9545C9.16548 8.74353 9.45163 8.625 9.75 8.625C10.0484 8.625 10.3345 8.74353 10.5455 8.9545C10.7565 9.16548 10.875 9.45163 10.875 9.75ZM15.375 9.75V15.75C15.375 16.0484 15.2565 16.3345 15.0455 16.5455C14.8345 16.7565 14.5484 16.875 14.25 16.875C13.9516 16.875 13.6655 16.7565 13.4545 16.5455C13.2435 16.3345 13.125 16.0484 13.125 15.75V9.75C13.125 9.45163 13.2435 9.16548 13.4545 8.9545C13.6655 8.74353 13.9516 8.625 14.25 8.625C14.5484 8.625 14.8345 8.74353 15.0455 8.9545C15.2565 9.16548 15.375 9.45163 15.375 9.75Z" fill="currentColor"/></svg>',
+'caret-left':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.7957 18.7041C16.0071 18.9154 16.1258 19.2021 16.1258 19.501C16.1258 19.7999 16.0071 20.0865 15.7957 20.2978C15.5844 20.5092 15.2977 20.6279 14.9989 20.6279C14.7 20.6279 14.4133 20.5092 14.202 20.2978L6.70198 12.7978C6.5971 12.6933 6.51388 12.5691 6.4571 12.4324C6.40032 12.2956 6.37109 12.149 6.37109 12.001C6.37109 11.8529 6.40032 11.7063 6.4571 11.5696C6.51388 11.4328 6.5971 11.3086 6.70198 11.2041L14.202 3.7041C14.4133 3.49276 14.7 3.37402 14.9989 3.37402C15.2977 3.37402 15.5844 3.49276 15.7957 3.7041C16.0071 3.91544 16.1258 4.20209 16.1258 4.50097C16.1258 4.79986 16.0071 5.08651 15.7957 5.29785L9.09354 12L15.7957 18.7041Z" fill="currentColor"/></svg>',
+'dots':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5.625C10.5 5.32833 10.588 5.03832 10.7528 4.79165C10.9176 4.54497 11.1519 4.35271 11.426 4.23918C11.7001 4.12565 12.0017 4.09594 12.2926 4.15382C12.5836 4.2117 12.8509 4.35456 13.0607 4.56434C13.2704 4.77412 13.4133 5.04139 13.4712 5.33237C13.5291 5.62334 13.4994 5.92494 13.3858 6.19903C13.2723 6.47311 13.08 6.70738 12.8334 6.87221C12.5867 7.03703 12.2967 7.125 12 7.125C11.6022 7.125 11.2206 6.96697 10.9393 6.68566C10.658 6.40436 10.5 6.02283 10.5 5.625ZM12 10.5C11.7033 10.5 11.4133 10.588 11.1666 10.7528C10.92 10.9176 10.7277 11.1519 10.6142 11.426C10.5006 11.7001 10.4709 12.0017 10.5288 12.2926C10.5867 12.5836 10.7296 12.8509 10.9393 13.0607C11.1491 13.2704 11.4164 13.4133 11.7074 13.4712C11.9983 13.5291 12.2999 13.4994 12.574 13.3858C12.8481 13.2723 13.0824 13.08 13.2472 12.8334C13.412 12.5867 13.5 12.2967 13.5 12C13.5 11.6022 13.342 11.2206 13.0607 10.9393C12.7794 10.658 12.3978 10.5 12 10.5ZM12 16.875C11.7033 16.875 11.4133 16.963 11.1666 17.1278C10.92 17.2926 10.7277 17.5269 10.6142 17.801C10.5006 18.0751 10.4709 18.3767 10.5288 18.6676C10.5867 18.9586 10.7296 19.2259 10.9393 19.4357C11.1491 19.6454 11.4164 19.7883 11.7074 19.8462C11.9983 19.9041 12.2999 19.8744 12.574 19.7608C12.8481 19.6473 13.0824 19.455 13.2472 19.2084C13.412 18.9617 13.5 18.6717 13.5 18.375C13.5 17.9772 13.342 17.5956 13.0607 17.3143C12.7794 17.033 12.3978 16.875 12 16.875Z" fill="currentColor"/></svg>',
+'arrow-left':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.3749 12C21.3749 12.2984 21.2564 12.5846 21.0454 12.7955C20.8344 13.0065 20.5483 13.125 20.2499 13.125H6.46866L11.2987 17.9541C11.51 18.1654 11.6287 18.4521 11.6287 18.751C11.6287 19.0499 11.51 19.3365 11.2987 19.5478C11.0873 19.7592 10.8007 19.8779 10.5018 19.8779C10.2029 19.8779 9.91625 19.7592 9.70491 19.5478L2.95491 12.7978C2.85003 12.6933 2.76681 12.5691 2.71003 12.4324C2.65325 12.2956 2.62402 12.149 2.62402 12.001C2.62402 11.8529 2.65325 11.7063 2.71003 11.5696C2.76681 11.4328 2.85003 11.3086 2.95491 11.2041L9.70491 4.4541C9.80956 4.34945 9.93379 4.26644 10.0705 4.20981C10.2072 4.15317 10.3538 4.12402 10.5018 4.12402C10.6498 4.12402 10.7963 4.15317 10.9331 4.20981C11.0698 4.26644 11.194 4.34945 11.2987 4.4541C11.4033 4.55875 11.4863 4.68298 11.543 4.81971C11.5996 4.95644 11.6287 5.10298 11.6287 5.25097C11.6287 5.39897 11.5996 5.54551 11.543 5.68224C11.4863 5.81897 11.4033 5.9432 11.2987 6.04785L6.46866 10.875H20.2499C20.5483 10.875 20.8344 10.9936 21.0454 11.2045C21.2564 11.4155 21.3749 11.7017 21.3749 12Z" fill="currentColor"/></svg>',
+'arrow-right':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.0459 12.7959L14.2959 19.5459C14.0846 19.7572 13.7979 19.8759 13.4991 19.8759C13.2002 19.8759 12.9135 19.7572 12.7022 19.5459C12.4908 19.3345 12.3721 19.0479 12.3721 18.749C12.3721 18.4501 12.4908 18.1635 12.7022 17.9521L17.5312 13.1249H3.75C3.45163 13.1249 3.16548 13.0064 2.9545 12.7954C2.74353 12.5844 2.625 12.2983 2.625 11.9999C2.625 11.7016 2.74353 11.4154 2.9545 11.2044C3.16548 10.9934 3.45163 10.8749 3.75 10.8749H17.5312L12.7041 6.04492C12.4927 5.83358 12.374 5.54693 12.374 5.24804C12.374 4.94916 12.4927 4.66251 12.7041 4.45117C12.9154 4.23983 13.2021 4.12109 13.5009 4.12109C13.7998 4.12109 14.0865 4.23983 14.2978 4.45117L21.0478 11.2012C21.1527 11.3058 21.2359 11.4302 21.2926 11.5671C21.3493 11.704 21.3784 11.8507 21.3782 11.9989C21.3781 12.1471 21.3486 12.2938 21.2916 12.4305C21.2346 12.5673 21.1511 12.6914 21.0459 12.7959Z" fill="currentColor"/></svg>',
+'caret-down':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.2959 9.79586L12.7959 17.2959C12.6914 17.4007 12.5672 17.484 12.4304 17.5407C12.2937 17.5975 12.1471 17.6267 11.999 17.6267C11.851 17.6267 11.7043 17.5975 11.5676 17.5407C11.4309 17.484 11.3067 17.4007 11.2021 17.2959L3.70215 9.79586C3.4908 9.58451 3.37207 9.29787 3.37207 8.99898C3.37207 8.7001 3.4908 8.41345 3.70215 8.20211C3.91349 7.99076 4.20014 7.87203 4.49902 7.87203C4.79791 7.87203 5.08455 7.99076 5.2959 8.20211L12 14.9062L18.704 8.20117C18.9154 7.98983 19.202 7.87109 19.5009 7.87109C19.7998 7.87109 20.0864 7.98983 20.2978 8.20117C20.5091 8.41252 20.6278 8.69916 20.6278 8.99805C20.6278 9.29693 20.5091 9.58358 20.2978 9.79492L20.2959 9.79586Z" fill="currentColor"/></svg>',
+'user-outline':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+'user-filled':'<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.67 0 8 1.34 8 4v2H4v-2c0-2.66 5.33-4 8-4zm0-2a4 4 0 110-8 4 4 0 010 8z"/></svg>',
+'flip':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.375 4.50004V9.00004C21.375 9.29841 21.2565 9.58455 21.0455 9.79553C20.8345 10.0065 20.5484 10.125 20.25 10.125H15.75C15.4516 10.125 15.1655 10.0065 14.9545 9.79553C14.7435 9.58455 14.625 9.29841 14.625 9.00004C14.625 8.70167 14.7435 8.41552 14.9545 8.20454C15.1655 7.99356 15.4516 7.87504 15.75 7.87504H17.5312L16.8 7.14379C15.4761 5.8133 13.6782 5.06272 11.8012 5.05691H11.7609C9.90075 5.05284 8.11375 5.78131 6.78656 7.08472C6.57323 7.29333 6.28576 7.40865 5.9874 7.40531C5.68905 7.40197 5.40423 7.28024 5.19562 7.06691C4.98702 6.85358 4.8717 6.56611 4.87504 6.26775C4.87838 5.9694 5.0001 5.68458 5.21344 5.47597C6.96114 3.75984 9.31435 2.80097 11.7638 2.80691H11.8125C14.2835 2.81365 16.6507 3.80134 18.3937 5.55285L19.125 6.28129V4.50004C19.125 4.20167 19.2435 3.91552 19.4545 3.70454C19.6655 3.49356 19.9516 3.37504 20.25 3.37504C20.5484 3.37504 20.8345 3.49356 21.0455 3.70454C21.2565 3.91552 21.375 4.20167 21.375 4.50004ZM17.2134 16.9153C15.8856 18.2194 14.0974 18.948 12.2363 18.9432H12.1959C10.319 18.9373 8.52111 18.1868 7.19719 16.8563L6.46875 16.125H8.25C8.54837 16.125 8.83452 16.0065 9.0455 15.7955C9.25647 15.5846 9.375 15.2984 9.375 15C9.375 14.7017 9.25647 14.4155 9.0455 14.2045C8.83452 13.9936 8.54837 13.875 8.25 13.875H3.75C3.45163 13.875 3.16548 13.9936 2.9545 14.2045C2.74353 14.4155 2.625 14.7017 2.625 15V19.5C2.625 19.7984 2.74353 20.0846 2.9545 20.2955C3.16548 20.5065 3.45163 20.625 3.75 20.625C4.04837 20.625 4.33452 20.5065 4.5455 20.2955C4.75647 20.0846 4.875 19.7984 4.875 19.5V17.7188L5.60625 18.45C7.34974 20.2005 9.71689 21.1872 12.1875 21.1932H12.24C14.6894 21.1991 17.0426 20.2402 18.7903 18.5241C18.8959 18.4208 18.9802 18.2977 19.0383 18.1619C19.0963 18.026 19.1271 17.8801 19.1287 17.7323C19.1304 17.5846 19.1029 17.438 19.0479 17.3009C18.9929 17.1637 18.9114 17.0388 18.8081 16.9332C18.7048 16.8275 18.5817 16.7433 18.4459 16.6852C18.31 16.6271 18.1641 16.5964 18.0163 16.5948C17.8686 16.5931 17.722 16.6206 17.5849 16.6756C17.4478 16.7306 17.3228 16.8121 17.2172 16.9153H17.2134Z" fill="currentColor"/></svg>'
+};
+
+function loadIcons(){
+  Object.keys(ICONS_RAW).forEach(name=>{IC[name]=ICONS_RAW[name]});
+  document.querySelectorAll('[data-icon]').forEach(el=>{
+    const n=el.getAttribute('data-icon');
+    if(IC[n])el.innerHTML=IC[n];
+  });
+}
+function icon(name,cls){
+  return'<span class="i'+(cls?' '+cls:'')+'">'+(IC[name]||'')+'</span>';
+}
+
+let D=LD()||{folders:[{name:'English',words:[{t:'resilient',d:'Able to recover quickly from difficulties or setbacks.',k:false},{t:'ambiguous',d:'Open to more than one interpretation; not having a clear meaning.',k:false},{t:'concise',d:'Giving much information clearly and in few words.',k:false},{t:'eloquent',d:'Fluent and persuasive in speaking or writing.',k:false},{t:'pragmatic',d:'Dealing with things sensibly and realistically, based on practical considerations.',k:false},{t:'subtle',d:'So delicate or precise as to be difficult to analyze or describe.',k:false},{t:'diligent',d:'Having or showing care and conscientiousness in one\'s work or duties.',k:false},{t:'meticulous',d:'Showing great attention to detail; very careful and precise.',k:false},{t:'candid',d:'Truthful and straightforward; frank and honest in expression.',k:false},{t:'profound',d:'Very great or intense; having deep insight or understanding.',k:false},{t:'lucid',d:'Expressed clearly and easy to understand.',k:false},{t:'tenacious',d:'Holding firmly to a purpose or belief; not giving up easily.',k:false},{t:'empathy',d:'The ability to understand and share the feelings of another person.',k:false},{t:'integrity',d:'The quality of being honest and having strong moral principles.',k:false},{t:'leverage',d:'Use something to maximum advantage to achieve a desired outcome.',k:false},{t:'momentum',d:'The driving force gained by the development of a process or course of events.',k:false},{t:'nuance',d:'A subtle difference in meaning, expression, or sound.',k:false},{t:'persevere',d:'To continue steadfastly despite difficulty or delay in achieving success.',k:false},{t:'articulate',d:'Having or showing the ability to speak fluently and coherently.',k:false},{t:'collaborate',d:'To work jointly with others toward a common goal.',k:false},{t:'delegate',d:'To entrust a task or responsibility to another person.',k:false},{t:'facilitate',d:'To make an action or process easier or more achievable.',k:false},{t:'innovate',d:'To introduce new methods, ideas, or products.',k:false},{t:'prioritize',d:'To designate something as more important than other things.',k:false},{t:'synthesize',d:'To combine elements into a coherent whole.',k:false},{t:'validate',d:'To confirm or verify the accuracy or truth of something.',k:false},{t:'advocate',d:'To publicly support or recommend a particular cause or policy.',k:false},{t:'cultivate',d:'To develop or improve by careful attention and effort.',k:false},{t:'elaborate',d:'To develop or present a theory or idea in detail.',k:false},{t:'mitigate',d:'To make something bad less severe, serious, or painful.',k:false},{t:'navigate',d:'To find one\'s way through a complex situation or environment.',k:false},{t:'optimize',d:'To make the best or most effective use of a resource or situation.',k:false},{t:'refine',d:'To improve something by making small changes to bring it closer to perfection.',k:false},{t:'streamline',d:'To make a system or process more efficient and effective.',k:false},{t:'transform',d:'To make a thorough or dramatic change in form, appearance, or character.',k:false}]},{name:'Spanish',words:[{t:'hola',d:'hello',k:false},{t:'gracias',d:'thank you',k:false},{t:'por favor',d:'please',k:false},{t:'bueno',d:'good',k:false},{t:'amigo',d:'friend',k:false},{t:'casa',d:'house',k:false},{t:'agua',d:'water',k:false},{t:'tiempo',d:'time / weather',k:false},{t:'trabajar',d:'to work',k:false},{t:'comer',d:'to eat',k:false},{t:'hablar',d:'to speak',k:false},{t:'entender',d:'to understand',k:false},{t:'grande',d:'big',k:false},{t:'pequeño',d:'small',k:false},{t:'rápido',d:'fast',k:false},{t:'tranquilo',d:'calm',k:false}]},{name:'Ukrainian',words:[{t:'привіт',d:'hello',k:false},{t:'дякую',d:'thank you',k:false},{t:'будь ласка',d:'please',k:false},{t:'добре',d:'good',k:false},{t:'друг',d:'friend',k:false},{t:'вода',d:'water',k:false},{t:'їжа',d:'food',k:false},{t:'час',d:'time',k:false},{t:'вчора',d:'yesterday',k:false},{t:'сьогодні',d:'today',k:false},{t:'завтра',d:'tomorrow',k:false},{t:'місто',d:'city',k:false},{t:'дорога',d:'road',k:false},{t:'серце',d:'heart',k:false},{t:'мова',d:'language',k:false},{t:'любов',d:'love',k:false},{t:'робота',d:'work',k:false},{t:'школа',d:'school',k:false},{t:'книга',d:'book',k:false},{t:'небо',d:'sky',k:false},{t:'сонце',d:'sun',k:false},{t:'дерево',d:'tree',k:false},{t:'річка',d:'river',k:false},{t:'гора',d:'mountain',k:false}]}],streak:{count:0,last:null},sv:SEED_V};
+D.folders.forEach(f=>f.words.forEach(w=>{if(w.k===undefined)w.k=false}));
+
+let cF=null,pC=[],pI=0,pFis=new Set(),fl=false,ewm=false,ew=null,pk=0,pFilter='not_learned';
+let folderEditMode=false;
+let pdFi=-1,pdEl=null,pdGhost=null,pdOffY=0;
+let swipeX0=null;
+
+function show(id){
+  document.querySelectorAll('.scr').forEach(s=>{s.classList.remove('on')});
+  const el=$(id);el.style.opacity='0';el.classList.add('on');
+  requestAnimationFrame(()=>{el.style.opacity='1'});
+  // Show FAB only on home and folder screens
+  const fab=$('fabBtn');
+  if(fab)fab.style.display=(id==='sH'||id==='sF')?'flex':'none';
+}
+function fabClick(){
+  if(cF!==null)openAW(cF);else openAW();
+}
+function goH(){ewm=false;cF=null;show('sH');rFolders();updStats()}
+
+function showToast(msg){
+  $('toastMsg').textContent=msg;
+  $('toast').classList.add('show');
+  setTimeout(()=>$('toast').classList.remove('show'),2000);
+}
+
+function updStreak(){
+  const today=new Date().toDateString();
+  if(D.streak.last===today)return;
+  const yesterday=new Date(Date.now()-864e5).toDateString();
+  D.streak.count=D.streak.last===yesterday?D.streak.count+1:1;
+  D.streak.last=today;SV();
+}
+
+function updStats(){
+  const total=D.folders.reduce((s,f)=>s+f.words.length,0);
+  const known=D.folders.reduce((s,f)=>s+f.words.filter(w=>w.k).length,0);
+  $('stW').textContent=known+' / '+total;
+  $('stS').textContent=D.streak.count;
+  const circ=163.36;
+  const pct=total>0?known/total:0;
+  $('stRingFill').setAttribute('stroke-dasharray',(pct*circ)+' '+circ);
+}
+
+function toggleFolderEditMode(){
+  folderEditMode=!folderEditMode;
+  const btn=$('btnFolderEdit');
+  if(folderEditMode){
+    btn.style.background='var(--green)';
+    btn.style.borderColor='transparent';
+    btn.style.color='#fff';
+    btn.innerHTML=icon('check');
+  } else {
+    btn.style.background='';btn.style.borderColor='';btn.style.color='';
+    btn.innerHTML=icon('pencil');
+    if(pdGhost){pdGhost.remove();pdGhost=null;}
+    pdFi=-1;pdEl=null;
+    document.removeEventListener('pointermove',pdMove);
+    document.removeEventListener('pointerup',pdEnd);
+  }
+  rFolders();
+  if(folderEditMode)initFolderDrag();
+}
+
+let delConfirmCb=null;
+function showDelConfirm(name,cb){$('delConfirmName').textContent='"'+name+'"';delConfirmCb=cb;openMo('mDelConfirm')}
+function execDelConfirm(){closeMo('mDelConfirm');setTimeout(()=>{if(delConfirmCb){delConfirmCb();delConfirmCb=null}},350)}
+function delFolder(fi){
+  showDelConfirm(D.folders[fi].name,()=>{D.folders.splice(fi,1);SV();rFolders();updStats()});
+}
+
+function initFolderDrag(){
+  $('fList').querySelectorAll('.fc-grip').forEach(g=>{
+    g.addEventListener('pointerdown',pdStart,{passive:false});
+  });
+}
+function pdStart(e){
+  e.preventDefault();
+  const card=e.currentTarget.closest('.fc');
+  const cards=[...$('fList').querySelectorAll('.fc')];
+  pdFi=cards.indexOf(card);pdEl=card;
+  const rect=card.getBoundingClientRect();
+  pdOffY=e.clientY-rect.top;
+  pdGhost=card.cloneNode(true);
+  Object.assign(pdGhost.style,{position:'fixed',width:rect.width+'px',left:rect.left+'px',top:(e.clientY-pdOffY)+'px',opacity:'0.95',zIndex:'999',pointerEvents:'none',boxShadow:'0 12px 40px rgba(0,0,0,.15)',transform:'scale(1.01)',transition:'none'});
+  document.body.appendChild(pdGhost);
+  pdEl.style.visibility='hidden';
+  document.addEventListener('pointermove',pdMove,{passive:false});
+  document.addEventListener('pointerup',pdEnd);
+}
+function pdMove(e){
+  if(pdFi===-1)return;
+  e.preventDefault();
+  pdGhost.style.top=(e.clientY-pdOffY)+'px';
+  const list=$('fList');
+  const cards=[...list.querySelectorAll('.fc')];
+  let ti=0;
+  cards.forEach((card,i)=>{
+    if(card===pdEl)return;
+    const r=card.getBoundingClientRect();
+    if(e.clientY>r.top+r.height/2)ti=i+1;
+  });
+  const insertAt=(pdFi<ti)?ti-1:ti;
+  if(insertAt!==pdFi){
+    const moved=D.folders.splice(pdFi,1)[0];
+    D.folders.splice(insertAt,0,moved);
+    if(cards[ti])list.insertBefore(pdEl,cards[ti]);
+    else list.appendChild(pdEl);
+    pdFi=insertAt;
+    pdEl.style.visibility='hidden';
+  }
+}
+function pdEnd(){
+  if(pdFi===-1)return;
+  pdGhost?.remove();pdGhost=null;pdFi=-1;pdEl=null;
+  document.removeEventListener('pointermove',pdMove);
+  document.removeEventListener('pointerup',pdEnd);
+  SV();rFolders();initFolderDrag();
+}
+
+// #1 Empty state + folders
+function rFolders(){
+  const el=$('fList');
+  if(D.folders.length===0){
+    el.innerHTML='<div class="fc-empty" onclick="addFolder()"><span style="font-size:18px;font-weight:600;color:var(--text2)">+</span> Create your first folder</div>';
+    return;
+  }
+  el.innerHTML=D.folders.map((f,fi)=>{
+    const pv=f.words.slice(0,3).map(w=>w.t).join(', ')+(f.words.length>3?', ...':'');
+    if(folderEditMode){
+      const grip=`<span class="fc-grip" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--text3);flex-shrink:0;touch-action:none">${icon('grip')}</span>`;
+      const trash=`<button class="wdel-btn" onclick="event.stopPropagation();delFolder(${fi})">${icon('trash')}</button>`;
+      return`<div class="fc">${grip}<div class="fc-i"><div class="fc-n">${f.name}</div><div class="fc-p">${pv||'No words yet'}</div></div><div class="fc-a" onclick="event.stopPropagation()">${trash}</div></div>`;
+    }
+    return`<div class="fc" onclick="openF(${fi})"><div class="fc-i"><div class="fc-n">${f.name}</div><div class="fc-p">${pv||'No words yet'}</div></div><div class="fc-a" onclick="event.stopPropagation()"><button class="sb" onclick="openAW(${fi})">${icon('plus')}</button><button class="sb play" onclick="goP(${fi})">${icon('play')}</button></div></div>`;
+  }).join('');
+}
+
+// #2 Add folder
+function addFolder(){
+  $('iNF').value='';$('bNF').disabled=true;
+  openMo('mNF');
+  setTimeout(()=>$('iNF').focus(),200);
+}
+function saveNF(){
+  const v=$('iNF').value.trim();if(!v)return;
+  D.folders.push({name:v,words:[]});SV();
+  closeMo('mNF');rFolders();showToast('Folder created');
+}
+
+function openF(i){
+  cF=i;ewm=false;
+  const f=D.folders[i];
+  $('fT').textContent=f.name;
+  $('fTSub').textContent=f.words.length+' words';
+  $('bFP').onclick=()=>goP(i);
+  $('ctxD').style.display='flex';
+  $('bFE').innerHTML=icon('pencil')+'<span>Edit words</span>';
+  rWords();show('sF');
+}
+
+function rWords(){
+  const f=D.folders[cF];
+  $('fTSub').textContent=f.words.length+' words';
+  $('fBody').classList.toggle('ew',ewm);
+  const notLearned=f.words.map((w,j)=>({w,j})).filter(x=>!x.w.k);
+  const learned=f.words.map((w,j)=>({w,j})).filter(x=>x.w.k);
+  let html='';
+  if(notLearned.length){
+    html+='<div class="wsec"><div class="wdiv">Not learned</div>';
+    html+=notLearned.map(({w,j})=>wordRow(w,j,false)).join('');
+    html+='</div>';
+  }
+  if(learned.length){
+    html+='<div class="wsec"><div class="wdiv">Learned</div>';
+    html+=learned.map(({w,j})=>wordRow(w,j,true)).join('');
+    html+='</div>';
+  }
+  if(!notLearned.length&&!learned.length){
+    html='<div class="empty"><div class="empty-t">No words yet</div><div class="empty-sub">Tap + to add your first word</div></div>';
+  }
+  $('wList').innerHTML=html;
+}
+
+// #19 Interactive checkmarks
+function wordRow(w,j,known){
+  return`<div class="wr" onclick="editW(${j})"><div class="wchk ${known?'known':''}" onclick="event.stopPropagation();togK(${j},event)">${icon('check')}</div><div class="wr-c"><div class="wr-t">${w.t}</div><div class="wr-d">${w.d||''}</div></div><button class="wdel-btn wdel" onclick="event.stopPropagation();remW(${j})">${icon('trash')}</button></div>`;
+}
+function togK(j,evt){
+  D.folders[cF].words[j].k=!D.folders[cF].words[j].k;
+  SV();updStats();
+  // Toggle visually without re-rendering to avoid jitter
+  const chk=evt?evt.currentTarget:null;
+  if(chk)chk.classList.toggle('known',D.folders[cF].words[j].k);
+}
+
+function togWE(){
+  ewm=!ewm;
+  const btn=$('bFE');
+  btn.innerHTML=ewm?icon('check')+'<span>Done</span>':icon('pencil')+'<span>Edit words</span>';
+  rWords();
+}
+function remW(j){D.folders[cF].words.splice(j,1);SV();rWords();rFolders();updStats()}
+
+function togCtx(){$('ctxM').classList.toggle('show')}
+function clCtx(){$('ctxM').classList.remove('show')}
+function renF(){clCtx();$('iR').value=D.folders[cF].name;$('bRn').disabled=false;openMo('mR')}
+function saveR(){const v=$('iR').value.trim();if(!v)return;D.folders[cF].name=v;$('fT').textContent=v;closeMo('mR');SV();rFolders()}
+function delFCtx(){clCtx();showDelConfirm(D.folders[cF].name,()=>{D.folders.splice(cF,1);SV();cF=null;goH()})}
+
+// Folder selector (native select)
+function populateFSel(){
+  $('fNewRow').classList.remove('show');
+  $('fPillRow').style.display='flex';
+  $('fNewInp').value='';
+  const sel=$('fSel');
+  sel.innerHTML=D.folders.map((f,i)=>`<option value="${i}"${i===pk?' selected':''}>${f.name}</option>`).join('');
+}
+function showInlineFolderInput(){
+  $('fPillRow').style.display='none';
+  $('fNewRow').classList.add('show');
+  setTimeout(()=>$('fNewInp').focus(),50);
+}
+function cancelNewFolder(){
+  $('fNewRow').classList.remove('show');
+  $('fPillRow').style.display='flex';
+  $('fNewInp').value='';
+}
+function confirmNewFolder(){
+  const v=$('fNewInp').value.trim();if(!v)return;
+  D.folders.push({name:v,words:[]});SV();
+  pk=D.folders.length-1;
+  populateFSel();
+  rFolders();
+  showToast('Folder created');
+}
+
+function openAW(fi){
+  ew=null;$('mTi').textContent='Add new word';$('bSv').textContent='Add word';
+  $('iT').value='';$('iD').value='';
+  $('bDl').style.display='none';$('bSv').disabled=true;
+  pk=typeof fi==='number'?fi:(cF!==null?cF:0);
+  populateFSel();
+  openMo('mW');
+  setTimeout(()=>{$('iT').focus();try{$('iT').select()}catch(e){}},150);
+}
+function editW(j){
+  const w=D.folders[cF].words[j];ew={f:cF,i:j};
+  $('mTi').textContent='Edit word';$('bSv').textContent='Save';
+  $('iT').value=w.t;$('iD').value=w.d||'';
+  $('bDl').style.display='flex';$('bSv').disabled=false;
+  pk=cF;populateFSel();
+  openMo('mW');
+}
+function valM(){$('bSv').disabled=!$('iT').value.trim()}
+function showMoNotif(){
+  const el=$('moNotif');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1500);
+}
+function saveW(){
+  const t=$('iT').value.trim(),d=$('iD').value.trim();if(!t)return;
+  if(ew){
+    D.folders[ew.f].words.splice(ew.i,1);
+    D.folders[pk].words.push({t,d,k:false});
+    closeMo('mW');
+    showToast('Word updated');
+  }else{
+    D.folders[pk].words.push({t,d,k:false});
+    showMoNotif();
+    $('iT').value='';$('iD').value='';$('bSv').disabled=true;
+    $('iT').focus();
+  }
+  ew=null;SV();if(cF!==null)rWords();rFolders();updStats();
+}
+function delW(){
+  if(!ew)return;D.folders[ew.f].words.splice(ew.i,1);
+  closeMo('mW');ew=null;
+  SV();if(cF!==null)rWords();rFolders();updStats();
+  showToast('Word deleted');
+}
+
+// Modal open/close (X button and backdrop only)
+const appEl=document.querySelector('.app');
+let moOpenCount=0;
+function openMo(id){
+  const mo=$(id);
+  const mp=mo.querySelector('.mp');
+  mp.style.cssText='';
+  mo.style.display='flex';
+  moOpenCount++;
+  appEl.classList.add('modal-open');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>mo.classList.add('show')));
+}
+function closeMo(id){
+  const mo=$(id);
+  mo.classList.remove('show');
+  moOpenCount=Math.max(0,moOpenCount-1);
+  if(moOpenCount===0)appEl.classList.remove('modal-open');
+  setTimeout(()=>{mo.style.display='none';const mp=mo.querySelector('.mp');mp.style.cssText=''},400);
+}
+function clMo(e){if(e.target.classList.contains('mo')){closeMo(e.target.id)}}
+
+// Help
+function showHelp(){openMo('mHelp')}
+
+// Practice
+function ctaGo(){goP(-1,'all')}
+function goP(fi,filter){
+  pFis=fi===-1?new Set():new Set([fi]);
+  pFilter=filter||'not_learned';
+  popFolderSel();
+  const fs=$('ddFiltSel');fs.value=pFilter;$('ddFiltL').textContent=fs.options[fs.selectedIndex].text;
+  ldC();show('sP');updStreak();updStats();
+}
+function ldC(){
+  let words=pFis.size===0?D.folders.flatMap(f=>f.words):[...pFis].flatMap(i=>D.folders[i]?.words||[]);
+  if(pFilter==='not_learned')words=words.filter(w=>!w.k);
+  else if(pFilter==='learned')words=words.filter(w=>w.k);
+  pC=words.sort(()=>Math.random()-.5);pI=0;fl=false;
+  $('pBB').style.display='flex';
+  if(pC.length===0){showDone();return}
+  bCard();rCard();
+}
+
+// #15 Stacked cards
+function bCard(){
+  $('cArea').innerHTML=`<div class="cc" id="cCt"></div><div class="deck"><div class="deck-bg"><div class="deck-ghost" style="transform:translateY(12px) rotate(-4deg);opacity:.6"></div><div class="deck-ghost" style="transform:translateY(6px) rotate(3deg);opacity:.8"></div></div><div class="card" id="card" style="position:relative;z-index:1"><div class="card-w" id="cW"></div><div class="card-div" id="cDv"></div><div class="card-d" id="cD"></div><div class="fh" id="fHint">${icon('flip')}</div></div></div>`;
+  $('fHint').addEventListener('click',()=>flip());
+  initCardSwipe();
+}
+function rCard(){
+  if(pI>=pC.length){showDone();return}
+  const c=pC[pI];$('cCt').textContent=(pI+1)+' of '+pC.length;
+  $('cW').textContent=c.t;$('cD').textContent=c.d;
+  $('cD').classList.remove('show');$('cDv').classList.remove('show');
+  $('fHint').classList.remove('fl');
+  $('pFill').style.width=((pI+1)/pC.length*100)+'%';fl=false;
+  const cd=$('card');
+  cd.style.transition='none';cd.style.transform='scale(.96)';cd.style.opacity='0';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{cd.style.transition='transform .3s cubic-bezier(.4,0,.2,1),opacity .3s';cd.style.transform='scale(1)';cd.style.opacity='1'}));
+}
+function flip(){
+  fl=!fl;$('cD').classList.toggle('show',fl);$('cDv').classList.toggle('show',fl);$('fHint').classList.toggle('fl',fl);
+}
+function prevCard(){
+  if(pI>0){pI--;fl=false;rCard()}
+}
+// #17 No auto-flip. #18 Toast on mark known
+function nxt(k){
+  if(k){
+    const c=pC[pI];
+    for(const f of D.folders){const w=f.words.find(w=>w.t===c.t&&w.d===c.d);if(w){w.k=true;break}}
+    SV();updStats();
+    showToast('Word learned!');
+  }
+  pI++;fl=false;rCard();
+}
+function initCardSwipe(){
+  const card=$('card');if(!card)return;
+  let sx=0,sy=0,dx=0,didDrag=false,active=false;
+  card.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.fh'))return;
+    sx=e.clientX;sy=e.clientY;dx=0;didDrag=false;active=true;
+    card.setPointerCapture(e.pointerId);
+    card.style.transition='none';
+  },{passive:true});
+  card.addEventListener('pointermove',e=>{
+    if(!active)return;
+    dx=e.clientX-sx;
+    const dy=Math.abs(e.clientY-sy);
+    if(!didDrag&&Math.abs(dx)>8&&Math.abs(dx)>dy)didDrag=true;
+    if(!didDrag)return;
+    if(dx>0&&pI===0)dx=0;
+    card.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;
+  },{passive:true});
+  card.addEventListener('pointerup',()=>{
+    if(!active)return;active=false;
+    if(!didDrag){flip();card.style.transition='';didDrag=false;return}
+    if(Math.abs(dx)>=80){
+      const dir=dx>0?1:-1;
+      card.style.transition='transform .3s cubic-bezier(.4,0,.2,1),opacity .3s';
+      card.style.transform=`translateX(${dir*600}px) rotate(${dir*28}deg)`;
+      card.style.opacity='0';
+      setTimeout(()=>dir>0?(pI===pC.length-1?nxt(1):prevCard()):nxt(0),280);
+    } else {
+      card.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';
+      card.style.transform='';
+    }
+    didDrag=false;
+  },{passive:true});
+  card.addEventListener('pointercancel',()=>{
+    active=false;didDrag=false;
+    card.style.transition='transform .35s cubic-bezier(.4,0,.2,1)';
+    card.style.transform='';
+  },{passive:true});
+}
+
+function showDone(){
+  $('cArea').innerHTML=`<div style="text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><span class="i" style="width:28px;height:28px;color:var(--green)">${IC['check']||''}</span></div><div style="font-size:22px;font-weight:600;margin-bottom:8px">All done!</div><div style="font-size:14px;color:var(--text2);margin-bottom:28px">Come back tomorrow</div><button class="dnb" onclick="closeP()">${icon('arrow-left')} Back to folders</button></div>`;
+  $('pBB').style.display='none';
+}
+function closeP(){if(cF!==null&&pFis.size===1&&pFis.has(cF))openF(cF);else goH()}
+
+function popFolderSel(){
+  const sel=$('ddBSel');
+  const cur=pFis.size===1?[...pFis][0]:-1;
+  sel.innerHTML=`<option value="-1"${cur===-1?' selected':''}>All folders</option>`+
+    D.folders.map((f,i)=>`<option value="${i}"${i===cur?' selected':''}>${f.name}</option>`).join('');
+  $('ddL').textContent=sel.options[sel.selectedIndex].text;
+}
+function onFolderSel(sel){
+  const v=parseInt(sel.value);
+  pFis=v===-1?new Set():new Set([v]);
+  $('ddL').textContent=sel.options[sel.selectedIndex].text;
+  ldC();
+}
+function onFiltSel(sel){
+  pFilter=sel.value;
+  $('ddFiltL').textContent=sel.options[sel.selectedIndex].text;
+  ldC();
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.ctx')&&!e.target.closest('.hdr-dots'))clCtx();
+});
+
+// Keyboard popup (iOS + Android)
+function initKeyboard(){
+  if(!window.visualViewport)return;
+  const upd=()=>{
+    const kbh=Math.max(0,Math.round(window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop));
+    document.documentElement.style.setProperty('--kb',kbh+'px');
+  };
+  window.visualViewport.addEventListener('resize',upd);
+  window.visualViewport.addEventListener('scroll',upd);
+}
+
+// ── Supabase auth + cloud sync ──────────────────────────────────────────────
+
+const SUPA_URL='https://utcgbxawccfyygpcczmv.supabase.co';
+const SUPA_KEY='sb_publishable_KpZLMXyXBtlMoFpVIi-eJw_eXP-feFG';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+let currentUser=null;
+let syncTimer=null;
+let authMode='signup';
+
+function scheduleSync(){
+  if(!currentUser)return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(syncToCloud,1500);
+}
+
+async function syncToCloud(){
+  if(!currentUser)return;
+  try{
+    // Delete existing folders (words cascade via FK)
+    const{error:de}=await sb.from('folders').delete().eq('user_id',currentUser.id);
+    if(de)throw de;
+    if(!D.folders.length)return;
+    // Insert all folders
+    const{data:fRows,error:fe}=await sb.from('folders')
+      .insert(D.folders.map((f,i)=>({user_id:currentUser.id,name:f.name,is_default:false,position:i})))
+      .select();
+    if(fe)throw fe;
+    // Insert all words
+    const words=D.folders.flatMap((f,fi)=>f.words.map(w=>({
+      folder_id:fRows[fi].id,term:w.t,definition:w.d||'',learned:!!w.k
+    })));
+    if(words.length){
+      const{error:we}=await sb.from('words').insert(words);
+      if(we)throw we;
+    }
+  }catch(e){console.warn('Sync error:',e)}
+}
+
+async function loadFromCloud(){
+  if(!currentUser)return;
+  try{
+    const{data:folders,error:fe}=await sb.from('folders')
+      .select('*').eq('user_id',currentUser.id).order('position');
+    if(fe)throw fe;
+    if(!folders||!folders.length){await syncToCloud();return;}
+    const fids=folders.map(f=>f.id);
+    const{data:words,error:we}=await sb.from('words').select('*').in('folder_id',fids);
+    if(we)throw we;
+    D.folders=folders.map(f=>({
+      name:f.name,
+      words:(words||[]).filter(w=>w.folder_id===f.id)
+        .map(w=>({t:w.term,d:w.definition,k:!!w.learned}))
+    }));
+    try{localStorage.setItem('muno',JSON.stringify(D))}catch(e){}
+    rFolders();updStats();
+  }catch(e){console.warn('Load error:',e)}
+}
+
+function updUserIcon(){
+  const lbl=$('btnUserLabel');if(!lbl)return;
+  lbl.textContent=currentUser?'':'Save your progress';
+  lbl.style.display=currentUser?'none':'';
+  $('btnUser').style.width=currentUser?'36px':'';
+  $('btnUser').style.padding=currentUser?'0':'';
+  $('btnUser').style.justifyContent=currentUser?'center':'';
+}
+
+function openUserModal(){
+  if(currentUser){
+    $('accEmail').textContent=currentUser.email;
+    openMo('mAcc');
+  }else{
+    authMode='login';
+    $('authTitle').textContent='Log in';
+    $('bAuthSubmit').textContent='Log in';
+    $('authToggle').innerHTML='Don\'t have an account? <span onclick="toggleAuthMode()" style="color:var(--text);text-decoration:underline;cursor:pointer">Create account</span>';
+    $('iAuthEmail').value='';$('iAuthPass').value='';
+    setAuthErr('');
+    $('authSocial').style.display='flex';
+    $('authEmail').style.display='none';
+    $('authReset').style.display='none';
+    openMo('mAuth');
+  }
+}
+
+function toggleAuthMode(){
+  authMode=authMode==='signup'?'login':'signup';
+  const isSignup=authMode==='signup';
+  const onEmailView=$('authEmail').style.display==='flex';
+  $('authTitle').textContent=onEmailView?(isSignup?'Sign up with email':'Log in with email'):(isSignup?'Create account':'Log in');
+  $('bAuthSubmit').textContent=isSignup?'Sign up':'Log in';
+  $('authToggle').innerHTML=isSignup
+    ?'Already have an account? <span onclick="toggleAuthMode()" style="color:var(--text);text-decoration:underline;cursor:pointer">Log in</span>'
+    :'Don\'t have an account? <span onclick="toggleAuthMode()" style="color:var(--text);text-decoration:underline;cursor:pointer">Create account</span>';
+  if($('bForgot'))$('bForgot').style.display=isSignup?'none':'block';
+  setAuthErr('');
+}
+
+function setAuthErr(msg){
+  const el=$('authErr');
+  if(msg){el.textContent=msg;el.style.display='block';}
+  else{el.textContent='';el.style.display='none';}
+}
+
+function showAuthEmail(){
+  $('authSocial').style.display='none';
+  $('authReset').style.display='none';
+  $('authEmail').style.display='flex';
+  $('authTitle').textContent=authMode==='signup'?'Sign up with email':'Log in with email';
+  $('bForgot').style.display=authMode==='login'?'block':'none';
+  setTimeout(()=>$('iAuthEmail').focus(),100);
+}
+
+function showAuthSocial(){
+  $('authEmail').style.display='none';
+  $('authReset').style.display='none';
+  $('authSocial').style.display='flex';
+  $('authTitle').textContent=authMode==='signup'?'Create account':'Log in';
+  setAuthErr('');
+}
+
+function showAuthReset(){
+  $('authEmail').style.display='none';
+  $('authReset').style.display='flex';
+  $('authResetDone').style.display='none';
+  $('authResetForm').style.display='contents';
+  $('authResetBack').style.display='block';
+  $('authTitle').textContent='Reset password';
+  $('iResetEmail').value=$('iAuthEmail').value;
+  setResetErr('');
+  setTimeout(()=>$('iResetEmail').focus(),100);
+}
+
+function setResetErr(msg){
+  const el=$('resetErr');
+  if(msg){el.textContent=msg;el.style.display='block';}
+  else{el.textContent='';el.style.display='none';}
+}
+
+async function submitReset(){
+  const email=$('iResetEmail').value.trim();
+  if(!email)return;
+  $('bResetSubmit').disabled=true;setResetErr('');
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+  $('bResetSubmit').disabled=false;
+  if(error){setResetErr(error.message);return;}
+  $('authResetForm').style.display='none';
+  $('authResetBack').style.display='none';
+  $('resetDoneEmail').textContent='We sent a reset link to '+email;
+  $('authResetDone').style.display='flex';
+}
+
+async function signInWithProvider(provider){
+  const{error}=await sb.auth.signInWithOAuth({
+    provider,
+    options:{redirectTo:window.location.href}
+  });
+  if(error){setAuthErr(error.message);}
+}
+
+async function submitAuth(){
+  const email=$('iAuthEmail').value.trim();
+  const pass=$('iAuthPass').value;
+  if(!email||!pass)return;
+  $('bAuthSubmit').disabled=true;setAuthErr('');
+  const fn=authMode==='signup'
+    ?sb.auth.signUp({email,password:pass})
+    :sb.auth.signInWithPassword({email,password:pass});
+  const{data,error}=await fn;
+  $('bAuthSubmit').disabled=false;
+  if(error){setAuthErr(error.message);return;}
+  currentUser=data.user||data.session?.user||null;
+  if(!currentUser&&authMode==='signup'){
+    setAuthErr('Check your email to confirm your account.');return;
+  }
+  updUserIcon();closeMo('mAuth');
+  await syncToCloud();
+  showToast(authMode==='signup'?'Account created!':'Logged in!');
+}
+
+async function signOutUser(){
+  await sb.auth.signOut();
+  currentUser=null;updUserIcon();
+  closeMo('mAcc');showToast('Logged out');
+}
+
+function confirmDeleteAccount(){
+  closeMo('mAcc');
+  setTimeout(()=>openMo('mAccDel'),350);
+}
+
+async function execDeleteAccount(){
+  closeMo('mAccDel');
+  try{
+    // Remove all data then delete auth account via RPC
+    await sb.from('folders').delete().eq('user_id',currentUser.id);
+    await sb.rpc('delete_account');
+  }catch(e){console.warn('Delete account error:',e)}
+  await sb.auth.signOut();
+  currentUser=null;updUserIcon();
+  showToast('Account deleted');
+}
+
+async function initAuth(){
+  const{data:{session}}=await sb.auth.getSession();
+  currentUser=session?.user??null;
+  updUserIcon();
+  if(currentUser)await loadFromCloud();
+  sb.auth.onAuthStateChange((_evt,session)=>{
+    currentUser=session?.user??null;
+    updUserIcon();
+  });
+}
+
+// Init
+loadIcons();rFolders();updStats();initKeyboard();initAuth();
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
