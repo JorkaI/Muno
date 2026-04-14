@@ -1263,14 +1263,13 @@ async function submitAuth(){
   }
   updUserIcon();closeMo('mAuth');
   try{await syncToCloud();}catch(e){console.error('Post-login sync error:',e)}
-  const email=currentUser?.email||'';
-  showToast(authMode==='signup'?'Registered as '+email:'Logged in as '+email);
+  showToast(authMode==='signup'?'Account created!':'Logged in!');
 }
 
 async function signOutUser(){
   await sb.auth.signOut();
   currentUser=null;
-  try{localStorage.clear();}catch(e){}
+  try{localStorage.removeItem('muno');}catch(e){}
   D=defaultData();
   cF=null;
   updUserIcon();closeMo('mAcc');goH();showToast('Logged out');
