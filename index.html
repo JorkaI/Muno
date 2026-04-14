@@ -1263,7 +1263,8 @@ async function submitAuth(){
   }
   updUserIcon();closeMo('mAuth');
   try{await syncToCloud();}catch(e){console.error('Post-login sync error:',e)}
-  showToast(authMode==='signup'?'Account created!':'Logged in!');
+  const _email=currentUser?.email||'';
+  showToast(authMode==='signup'?'Registered as '+_email:'Logged in as '+_email);
 }
 
 async function signOutUser(){
