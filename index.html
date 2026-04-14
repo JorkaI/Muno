@@ -614,7 +614,7 @@ svg{color:inherit}
 <script>
 const $=id=>document.getElementById(id);
 const SEED_V=1;
-const SV=()=>{try{localStorage.setItem('muno',JSON.stringify(D))}catch(e){}scheduleSync()};
+const SV=()=>{try{localStorage.setItem('muno',JSON.stringify(D))}catch(e){}syncToCloud()};
 const LD=()=>{try{const s=localStorage.getItem('muno');if(s){const d=JSON.parse(s);if((d.sv||0)>=SEED_V)return d;}}catch(e){}return null};
 
 // Icon system
@@ -1098,14 +1098,7 @@ const SUPA_KEY='sb_publishable_KpZLMXyXBtlMoFpVIi-eJw_eXP-feFG';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 let currentUser=null;
-let syncTimer=null;
 let authMode='signup';
-
-function scheduleSync(){
-  if(!currentUser)return;
-  clearTimeout(syncTimer);
-  syncTimer=setTimeout(syncToCloud,1500);
-}
 
 async function syncToCloud(){
   if(!currentUser)return;
@@ -1127,7 +1120,7 @@ async function syncToCloud(){
       const{error:we}=await sb.from('words').insert(words);
       if(we)throw we;
     }
-  }catch(e){console.warn('Sync error:',e)}
+  }catch(e){console.error('Sync error:',e)}
 }
 
 async function loadFromCloud(){
@@ -1147,7 +1140,7 @@ async function loadFromCloud(){
     }));
     try{localStorage.setItem('muno',JSON.stringify(D))}catch(e){}
     rFolders();updStats();
-  }catch(e){console.warn('Load error:',e)}
+  }catch(e){console.error('Load error:',e)}
 }
 
 function updUserIcon(){
@@ -1268,7 +1261,7 @@ async function submitAuth(){
     setAuthErr('Check your email to confirm your account.');return;
   }
   updUserIcon();closeMo('mAuth');
-  await syncToCloud();
+  try{await syncToCloud();}catch(e){console.error('Post-login sync error:',e)}
   showToast(authMode==='signup'?'Account created!':'Logged in!');
 }
 
@@ -1289,7 +1282,7 @@ async function execDeleteAccount(){
     // Remove all data then delete auth account via RPC
     await sb.from('folders').delete().eq('user_id',currentUser.id);
     await sb.rpc('delete_account');
-  }catch(e){console.warn('Delete account error:',e)}
+  }catch(e){console.error('Delete account error:',e)}
   await sb.auth.signOut();
   currentUser=null;updUserIcon();
   showToast('Account deleted');
