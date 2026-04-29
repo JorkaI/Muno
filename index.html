@@ -215,6 +215,22 @@ svg{color:inherit}
 .inf-group .inf-row+.inf-row{border-top:.5px solid rgba(0,0,0,.08)}
 .inf-row input{flex:1;background:transparent;border:none;font-size:14px;font-weight:500;color:var(--text);font-family:inherit;outline:none;min-width:0}
 .inf-row input::placeholder{color:rgba(0,0,0,.4);font-weight:400}
+.tr-btn{background:none;border:none;cursor:pointer;padding:0;margin-left:6px;color:var(--text3);display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;flex-shrink:0;transition:color .15s,opacity .15s}
+.tr-btn:active{color:var(--text)}
+.tr-btn.loading{opacity:.4;pointer-events:none}
+.tr-btn.active{color:#a855f7}
+.tr-btn .i{width:18px;height:18px;display:flex}
+.tr-section{display:none}
+.tr-loader{display:none;gap:5px;align-items:center;height:28px}
+.tr-loader span{width:5px;height:5px;border-radius:50%;background:#a855f7;animation:trDot .9s ease-in-out infinite}
+.tr-loader span:nth-child(2){animation-delay:.18s}
+.tr-loader span:nth-child(3){animation-delay:.36s}
+@keyframes trDot{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.tr-label{font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.04em;margin-bottom:8px}
+.tr-chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tr-chips::-webkit-scrollbar{display:none}
+.tr-chip{flex-shrink:0;background:rgba(168,85,247,.1);border:.5px solid rgba(168,85,247,.3);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;color:#a855f7;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .15s}
+.tr-chip:active{background:rgba(168,85,247,.22)}
 
 /* Picker sheet items */
 .pki-list{background:var(--bg);border:.5px solid rgba(0,0,0,.1);border-radius:var(--radsm);overflow:hidden}
@@ -318,7 +334,7 @@ svg{color:inherit}
 <div class="scr on" id="sH">
   <div class="hdr">
     <div class="logo"><img src="icons/logo.svg" alt="Muno" style="height:20px"></div>
-    <button class="btn-user" id="btnUser" onclick="openUserModal()" title="Account"><img src="icons/User.svg" class="btn-user-ic" alt=""><span id="btnUserLabel">Save your progress</span></button>
+    <button class="btn-user" id="btnUser" onclick="openUserModal()" title="Account"><img src="icons/User.svg" class="btn-user-ic" alt=""><span id="btnUserLabel">Sign in</span></button>
   </div>
   <div class="scr-body">
     <div class="stats an">
@@ -403,6 +419,14 @@ svg{color:inherit}
         </div>
         <div class="inf-row">
           <input id="iD" placeholder="Definition or translate" oninput="valM()" onkeydown="if(event.key==='Enter'){event.preventDefault();saveW()}" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="off">
+          <button class="tr-btn" id="btnTr" onclick="triggerTranslate()" type="button" title="Translate with DeepL"><span class="i" data-icon="translate"></span></button>
+        </div>
+      </div>
+      <div id="trSection" class="tr-section">
+        <div class="tr-loader" id="trLoader"><span></span><span></span><span></span></div>
+        <div id="trResult" style="display:none">
+          <div class="tr-label">Translation options</div>
+          <div class="tr-chips" id="trChips"></div>
         </div>
       </div>
       <div id="fSelWrap">
@@ -638,6 +662,7 @@ const ICONS_RAW={
 'caret-down':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.2959 9.79586L12.7959 17.2959C12.6914 17.4007 12.5672 17.484 12.4304 17.5407C12.2937 17.5975 12.1471 17.6267 11.999 17.6267C11.851 17.6267 11.7043 17.5975 11.5676 17.5407C11.4309 17.484 11.3067 17.4007 11.2021 17.2959L3.70215 9.79586C3.4908 9.58451 3.37207 9.29787 3.37207 8.99898C3.37207 8.7001 3.4908 8.41345 3.70215 8.20211C3.91349 7.99076 4.20014 7.87203 4.49902 7.87203C4.79791 7.87203 5.08455 7.99076 5.2959 8.20211L12 14.9062L18.704 8.20117C18.9154 7.98983 19.202 7.87109 19.5009 7.87109C19.7998 7.87109 20.0864 7.98983 20.2978 8.20117C20.5091 8.41252 20.6278 8.69916 20.6278 8.99805C20.6278 9.29693 20.5091 9.58358 20.2978 9.79492L20.2959 9.79586Z" fill="currentColor"/></svg>',
 'user-outline':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 'user-filled':'<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.67 0 8 1.34 8 4v2H4v-2c0-2.66 5.33-4 8-4zm0-2a4 4 0 110-8 4 4 0 010 8z"/></svg>',
+'translate':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M23.5059 19.7466L18.2559 9.24656C18.1624 9.05985 18.0188 8.90284 17.8412 8.79311C17.6635 8.68338 17.4588 8.62526 17.25 8.62526C17.0412 8.62526 16.8365 8.68338 16.6588 8.79311C16.4812 8.90284 16.3376 9.05985 16.2441 9.24656L14.3203 13.0903C13.0243 12.977 11.7763 12.5451 10.6875 11.8331C12.0106 10.2944 12.8383 8.392 13.0622 6.375H15C15.2984 6.375 15.5845 6.25647 15.7955 6.0455C16.0065 5.83452 16.125 5.54837 16.125 5.25C16.125 4.95163 16.0065 4.66548 15.7955 4.4545C15.5845 4.24353 15.2984 4.125 15 4.125H10.125V3C10.125 2.70163 10.0065 2.41548 9.7955 2.2045C9.58452 1.99353 9.29837 1.875 9 1.875C8.70163 1.875 8.41548 1.99353 8.2045 2.2045C7.99353 2.41548 7.875 2.70163 7.875 3V4.125H3C2.70163 4.125 2.41548 4.24353 2.2045 4.4545C1.99353 4.66548 1.875 4.95163 1.875 5.25C1.875 5.54837 1.99353 5.83452 2.2045 6.0455C2.41548 6.25647 2.70163 6.375 3 6.375H10.7934C10.5824 7.8412 9.96062 9.21771 9 10.3453C8.53122 9.79674 8.14006 9.18634 7.8375 8.53125C7.77824 8.39347 7.69203 8.26893 7.58394 8.16496C7.47584 8.06098 7.34805 7.97967 7.20808 7.92581C7.0681 7.87194 6.91877 7.84661 6.76886 7.8513C6.61895 7.85599 6.47149 7.89061 6.33516 7.95312C6.19882 8.01563 6.07636 8.10477 5.97498 8.2153C5.8736 8.32583 5.79534 8.45551 5.74481 8.59672C5.69428 8.73794 5.67249 8.88783 5.68074 9.03758C5.68898 9.18734 5.72709 9.33394 5.79281 9.46875C6.18635 10.3246 6.69789 11.1211 7.3125 11.835C6.0322 12.6777 4.53276 13.1263 3 13.125C2.70163 13.125 2.41548 13.2435 2.2045 13.4545C1.99353 13.6655 1.875 13.9516 1.875 14.25C1.875 14.5484 1.99353 14.8345 2.2045 15.0455C2.41548 15.2565 2.70163 15.375 3 15.375C5.16003 15.3768 7.26345 14.6843 9 13.3997C10.2593 14.3265 11.7156 14.9501 13.2553 15.2222L10.9931 19.7466C10.9228 19.8791 10.8797 20.0243 10.8664 20.1738C10.853 20.3232 10.8697 20.4738 10.9154 20.6167C10.9612 20.7596 11.035 20.8919 11.1326 21.0058C11.2302 21.1197 11.3496 21.213 11.4838 21.28C11.618 21.3471 11.7642 21.3867 11.9139 21.3964C12.0636 21.4062 12.2138 21.3859 12.3555 21.3367C12.4973 21.2876 12.6277 21.2105 12.7393 21.1102C12.8508 21.0099 12.9412 20.8883 13.005 20.7525L14.1947 18.375H20.3044L21.4931 20.7525C21.6265 21.0194 21.8605 21.2224 22.1435 21.3168C22.4266 21.4112 22.7356 21.3893 23.0025 21.2559C23.2694 21.1225 23.4724 20.8886 23.5668 20.6055C23.6612 20.3225 23.6393 20.0135 23.5059 19.7466ZM15.3197 16.125L17.25 12.2653L19.1794 16.125H15.3197Z" fill="currentColor"/></svg>',
 'flip':'<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.375 4.50004V9.00004C21.375 9.29841 21.2565 9.58455 21.0455 9.79553C20.8345 10.0065 20.5484 10.125 20.25 10.125H15.75C15.4516 10.125 15.1655 10.0065 14.9545 9.79553C14.7435 9.58455 14.625 9.29841 14.625 9.00004C14.625 8.70167 14.7435 8.41552 14.9545 8.20454C15.1655 7.99356 15.4516 7.87504 15.75 7.87504H17.5312L16.8 7.14379C15.4761 5.8133 13.6782 5.06272 11.8012 5.05691H11.7609C9.90075 5.05284 8.11375 5.78131 6.78656 7.08472C6.57323 7.29333 6.28576 7.40865 5.9874 7.40531C5.68905 7.40197 5.40423 7.28024 5.19562 7.06691C4.98702 6.85358 4.8717 6.56611 4.87504 6.26775C4.87838 5.9694 5.0001 5.68458 5.21344 5.47597C6.96114 3.75984 9.31435 2.80097 11.7638 2.80691H11.8125C14.2835 2.81365 16.6507 3.80134 18.3937 5.55285L19.125 6.28129V4.50004C19.125 4.20167 19.2435 3.91552 19.4545 3.70454C19.6655 3.49356 19.9516 3.37504 20.25 3.37504C20.5484 3.37504 20.8345 3.49356 21.0455 3.70454C21.2565 3.91552 21.375 4.20167 21.375 4.50004ZM17.2134 16.9153C15.8856 18.2194 14.0974 18.948 12.2363 18.9432H12.1959C10.319 18.9373 8.52111 18.1868 7.19719 16.8563L6.46875 16.125H8.25C8.54837 16.125 8.83452 16.0065 9.0455 15.7955C9.25647 15.5846 9.375 15.2984 9.375 15C9.375 14.7017 9.25647 14.4155 9.0455 14.2045C8.83452 13.9936 8.54837 13.875 8.25 13.875H3.75C3.45163 13.875 3.16548 13.9936 2.9545 14.2045C2.74353 14.4155 2.625 14.7017 2.625 15V19.5C2.625 19.7984 2.74353 20.0846 2.9545 20.2955C3.16548 20.5065 3.45163 20.625 3.75 20.625C4.04837 20.625 4.33452 20.5065 4.5455 20.2955C4.75647 20.0846 4.875 19.7984 4.875 19.5V17.7188L5.60625 18.45C7.34974 20.2005 9.71689 21.1872 12.1875 21.1932H12.24C14.6894 21.1991 17.0426 20.2402 18.7903 18.5241C18.8959 18.4208 18.9802 18.2977 19.0383 18.1619C19.0963 18.026 19.1271 17.8801 19.1287 17.7323C19.1304 17.5846 19.1029 17.438 19.0479 17.3009C18.9929 17.1637 18.9114 17.0388 18.8081 16.9332C18.7048 16.8275 18.5817 16.7433 18.4459 16.6852C18.31 16.6271 18.1641 16.5964 18.0163 16.5948C17.8686 16.5931 17.722 16.6206 17.5849 16.6756C17.4478 16.7306 17.3228 16.8121 17.2172 16.9153H17.2134Z" fill="currentColor"/></svg>'
 };
 
@@ -660,6 +685,7 @@ let cF=null,pC=[],pI=0,pFis=new Set(),fl=false,ewm=false,ew=null,pk=0,pFilter='n
 let folderEditMode=false;
 let pdFi=-1,pdEl=null,pdGhost=null,pdOffY=0;
 let swipeX0=null;
+let _navDepth=0,_ignorePopstate=false;
 
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>{s.classList.remove('on')});
@@ -672,7 +698,10 @@ function show(id){
 function fabClick(){
   if(cF!==null)openAW(cF);else openAW();
 }
-function goH(){ewm=false;cF=null;show('sH');rFolders();updStats()}
+function goH(){
+  ewm=false;cF=null;show('sH');rFolders();updStats();
+  if(_navDepth>0){_ignorePopstate=true;history.go(-_navDepth);_navDepth=0;setTimeout(()=>{_ignorePopstate=false},300);}
+}
 
 function showToast(msg){
   $('toastMsg').textContent=msg;
@@ -804,7 +833,7 @@ function saveNF(){
   closeMo('mNF');rFolders();showToast('Folder created');
 }
 
-function openF(i){
+function _showFolder(i){
   cF=i;ewm=false;
   const f=D.folders[i];
   $('fT').textContent=f.name;
@@ -813,6 +842,11 @@ function openF(i){
   $('ctxD').style.display='flex';
   $('bFE').innerHTML=icon('pencil')+'<span>Edit words</span>';
   rWords();show('sF');
+}
+function openF(i){
+  _showFolder(i);
+  _navDepth++;
+  history.pushState({screen:'folder',fi:i},'');
 }
 
 function rWords(){
@@ -892,6 +926,7 @@ function confirmNewFolder(){
 }
 
 function openAW(fi){
+  hideTrDrop();
   ew=null;$('mTi').textContent='Add new word';$('bSv').textContent='Add word';
   $('iT').value='';$('iD').value='';
   $('bDl').style.display='none';$('bSv').disabled=true;
@@ -901,6 +936,7 @@ function openAW(fi){
   setTimeout(()=>{$('iT').focus();try{$('iT').select()}catch(e){}},150);
 }
 function editW(j){
+  hideTrDrop();
   const w=D.folders[cF].words[j];ew={f:cF,i:j};
   $('mTi').textContent='Edit word';$('bSv').textContent='Save';
   $('iT').value=w.t;$('iD').value=w.d||'';
@@ -936,6 +972,66 @@ function delW(){
   showToast('Word deleted');
 }
 
+// MyMemory translation (free, no key required)
+async function triggerTranslate() {
+  const term = $('iT').value.trim();
+  if (!term) { showToast('Enter a word first'); return; }
+  const btn = $('btnTr');
+  btn.classList.add('loading');
+  hideTrDrop();
+  $('trSection').style.display = 'block';
+  $('trLoader').style.display = 'flex';
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(term)}&langpair=en|uk`);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    const seen = new Set();
+    const opts = [];
+    const add = v => {
+      const s = v?.trim();
+      if (!s || seen.has(s.toLowerCase())) return;
+      seen.add(s.toLowerCase());
+      opts.push(s);
+    };
+    add(data.responseData?.translatedText);
+    for (const m of (data.matches || [])) {
+      if (m.segment?.toLowerCase() !== term.toLowerCase()) continue;
+      add(m.translation);
+    }
+    if (!opts.length) throw new Error('empty');
+    showTrDrop(opts);
+  } catch(e) {
+    hideTrDrop();
+    showToast('Translation failed');
+  }
+  btn.classList.remove('loading');
+}
+function showTrDrop(opts) {
+  $('trLoader').style.display = 'none';
+  if (!opts.length) return;
+  if (opts.length === 1) {
+    $('iD').value = opts[0]; valM();
+    $('trSection').style.display = 'none'; return;
+  }
+  const chips = $('trChips');
+  chips._opts = opts;
+  chips.innerHTML = opts.map((o, i) => `<button class="tr-chip" onclick="pickTr(${i})" type="button">${o}</button>`).join('');
+  $('trResult').style.display = 'block';
+  $('btnTr').classList.add('active');
+}
+function hideTrDrop() {
+  $('trSection').style.display = 'none';
+  $('trLoader').style.display = 'none';
+  $('trResult').style.display = 'none';
+  $('trChips').innerHTML = '';
+  $('btnTr')?.classList.remove('active');
+}
+function pickTr(i) {
+  const opts = $('trChips')._opts;
+  if (opts?.[i]) { $('iD').value = opts[i]; valM(); }
+  hideTrDrop();
+}
+
 // Modal open/close (X button and backdrop only)
 const appEl=document.querySelector('.app');
 let moOpenCount=0;
@@ -968,6 +1064,8 @@ function goP(fi,filter){
   popFolderSel();
   const fs=$('ddFiltSel');fs.value=pFilter;$('ddFiltL').textContent=fs.options[fs.selectedIndex].text;
   ldC();show('sP');updStreak();updStats();
+  _navDepth++;
+  history.pushState({screen:'practice'},'');
 }
 function ldC(){
   let words=pFis.size===0?D.folders.flatMap(f=>f.words):[...pFis].flatMap(i=>D.folders[i]?.words||[]);
@@ -1056,7 +1154,18 @@ function showDone(){
   $('cArea').innerHTML=`<div style="text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><span class="i" style="width:28px;height:28px;color:var(--green)">${IC['check']||''}</span></div><div style="font-size:22px;font-weight:600;margin-bottom:8px">All done!</div><div style="font-size:14px;color:var(--text2);margin-bottom:28px">Come back tomorrow</div><button class="dnb" onclick="closeP()">${icon('arrow-left')} Back to folders</button></div>`;
   $('pBB').style.display='none';
 }
-function closeP(){if(cF!==null&&pFis.size===1&&pFis.has(cF))openF(cF);else goH()}
+function closeP(){
+  const toFolder=cF!==null&&pFis.size===1&&pFis.has(cF);
+  if(toFolder){
+    _showFolder(cF);
+    _ignorePopstate=true;history.go(-1);_navDepth--;
+    setTimeout(()=>{_ignorePopstate=false},300);
+  }else{
+    ewm=false;cF=null;show('sH');rFolders();updStats();
+    _ignorePopstate=true;history.go(-_navDepth);_navDepth=0;
+    setTimeout(()=>{_ignorePopstate=false},300);
+  }
+}
 
 function popFolderSel(){
   const sel=$('ddBSel');
@@ -1080,6 +1189,42 @@ function onFiltSel(sel){
 document.addEventListener('click',e=>{
   if(!e.target.closest('.ctx')&&!e.target.closest('.hdr-dots'))clCtx();
 });
+
+// Browser back/forward button support
+window.addEventListener('popstate',e=>{
+  if(_ignorePopstate)return;
+  const s=e.state;
+  if(!s||s.screen==='home'){_navDepth=0;ewm=false;cF=null;show('sH');rFolders();updStats();}
+  else if(s.screen==='folder'){_navDepth=1;_showFolder(s.fi);}
+});
+
+// Swipe-to-go-back gestures
+function initSwipeBack(){
+  // Folder screen: swipe right from left edge → go home
+  const sF=$('sF');
+  let fx0=0,fy0=0,fsw=false;
+  sF.addEventListener('touchstart',e=>{
+    if(moOpenCount>0)return;
+    fx0=e.touches[0].clientX;fy0=e.touches[0].clientY;fsw=fx0<80;
+  },{passive:true});
+  sF.addEventListener('touchend',e=>{
+    if(!fsw)return;fsw=false;
+    const dx=e.changedTouches[0].clientX-fx0,dy=Math.abs(e.changedTouches[0].clientY-fy0);
+    if(dx>60&&dy<100&&dx>dy)goH();
+  },{passive:true});
+
+  // Practice screen: swipe right from left edge → close practice
+  const sP=$('sP');
+  let px0=0,py0=0,psw=false;
+  sP.addEventListener('touchstart',e=>{
+    px0=e.touches[0].clientX;py0=e.touches[0].clientY;psw=px0<60;
+  },{passive:true});
+  sP.addEventListener('touchend',e=>{
+    if(!psw)return;psw=false;
+    const dx=e.changedTouches[0].clientX-px0,dy=Math.abs(e.changedTouches[0].clientY-py0);
+    if(dx>60&&dy<100&&dx>dy)closeP();
+  },{passive:true});
+}
 
 // Keyboard popup (iOS + Android)
 function initKeyboard(){
@@ -1146,11 +1291,11 @@ async function loadFromCloud(){
 
 function updUserIcon(){
   const lbl=$('btnUserLabel');if(!lbl)return;
-  lbl.textContent=currentUser?'':'Save your progress';
-  lbl.style.display=currentUser?'none':'';
-  $('btnUser').style.width=currentUser?'36px':'';
-  $('btnUser').style.padding=currentUser?'0':'';
-  $('btnUser').style.justifyContent=currentUser?'center':'';
+  lbl.textContent=currentUser?'Account':'Sign in';
+  lbl.style.display='';
+  $('btnUser').style.width='';
+  $('btnUser').style.padding='';
+  $('btnUser').style.justifyContent='';
 }
 
 function openUserModal(){
@@ -1306,7 +1451,8 @@ async function initAuth(){
 }
 
 // Init
-loadIcons();rFolders();updStats();initKeyboard();initAuth();
+history.replaceState({screen:'home'},'');
+loadIcons();rFolders();updStats();initKeyboard();initAuth();initSwipeBack();
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
